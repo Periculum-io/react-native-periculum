@@ -2,6 +2,7 @@
 
 The package gives you credit score information for your customer. No stress :)
 
+
 ## Installation
 Add react-native-periculum to your project by running;
 
@@ -51,6 +52,21 @@ import Periculum from 'react-native-periculum';
 />
 
 ```
+
+## Parameters
+
+| Name | Description  |
+| ------ | ------ |
+| authorization  | API access token  |
+| options  | { object }|
+| loanTenure  |Loan tenure (2, 3, 5...) |
+| dti  | DTI|
+| btnStyles  |button style |
+|btnText | button text |
+|btnTextStyle | button text style |
+|callback | Callback function |
+
+
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
