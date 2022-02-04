@@ -25,6 +25,15 @@ You need to have a [periculum](https://www.periculum.io/) account for this plugi
 * react-native-get-sms-android
 * react-native-permissions
 
+## Android Permissions
+Please make sure you add the following android permissions in your AndroidManifest.xml file
+```bash
+<uses-permission android:name="android.permission.READ_SMS" />
+<uses-permission android:name="android.permission.WRITE_SMS" />
+<uses-permission android:name="android.permission.SEND_SMS" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+```
 
 ## Usage
 
