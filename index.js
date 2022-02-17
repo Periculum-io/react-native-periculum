@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
 import { request, PERMISSIONS } from "react-native-permissions";
 import shortid from "shortid";
 import DeviceInfo from "react-native-device-info";
@@ -77,9 +75,17 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       }
 
       // get sms data...
-      const smsData = await getSmsData();
-      const sms = {};
-      const smsCount = 0;
+      const smsData = await getSmsData()
+        .then((result) => {
+          return result;
+        })
+        .catch((error) => {
+          console.log({ error });
+          return error;
+        });
+
+      const sms = smsData.smsList; // store sms list
+      const smsCount = smsData.count; //
 
       // align the data......
       const data = {
@@ -113,7 +119,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
           },
         },
         sms: {
-          data: sms,
+          data: JSON.parse(sms),
           count: smsCount,
         },
         metadata: {
@@ -122,8 +128,10 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
             bvn: bvn,
           },
         },
-        location: location.data ?? {},
+        location: location.data,
       };
+
+      console.log(JSON.stringify(data));
 
       // make the http request call...
       // run analytics...
@@ -133,7 +141,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       if (analyticsData.status === true) {
         const analyticsDataResponse = {
           status: analyticsData.status,
-          data: analyticsData.data // analytics data...
+          data: analyticsData.data, // analytics data...
         };
 
         // call resolve
@@ -144,11 +152,11 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       if (analyticsData.status === false) {
         const analyticsDataResponseFailed = {
           status: analyticsData.status,
-          data: 'Failed to get customer analytics data, contact support if this persist!'
+          data: "Failed to get customer analytics data, contact support if this persist!",
         };
 
         // call resolve
-        reject(analyticsDataResponseFailed)
+        reject(analyticsDataResponseFailed);
       }
 
       // setTimeout(() => {
@@ -168,10 +176,14 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
 
 // affordability
 
-export const affordability = async (authorization, statementKey, dti, loanTenure) => {
+export const affordability = async (
+  authorization,
+  statementKey,
+  dti,
+  loanTenure
+) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
-
       // check authorization...
       if (!authorization) {
         const ata = {
@@ -209,21 +221,25 @@ export const affordability = async (authorization, statementKey, dti, loanTenure
       }
 
       // make the call...
-      const affordability = await affordabilityCheck(statementKey, dti, loanTenure, authorization);
+      const affordability = await affordabilityCheck(
+        statementKey,
+        dti,
+        loanTenure,
+        authorization
+      );
 
-      if(affordability.status === true) {
+      if (affordability.status === true) {
         return resolve({
           status: true,
-          data: affordability.data
+          data: affordability.data,
         });
       }
 
       // failed...
       return reject({
         status: false,
-        msg: 'Failed to get statement affordability details.',
+        msg: "Failed to get statement affordability details.",
       });
-
     } catch (err) {
       const data = {
         status: false,
@@ -298,28 +314,41 @@ const getSmsData = async () => {
 
   const filter = {
     box: "inbox",
+    minDate: minDate, // timestamp (in milliseconds since UNIX epoch)
+    maxDate: maxDate, // timestamp (in milliseconds since UNIX epoch)
   };
 
-  SmsAndroid.list(
-    JSON.stringify(filter),
-    (fail) => {
-      const data = {
-        status: false,
-        msg: "Failed with this error: " + fail,
-      };
-      return data;
-    },
-    (count, smsList) => {
-      // return sms, smsList...
+  let smsObj = [];
 
-      const result = {
-        status: true,
-        count: count,
-        smsList: smsList,
-      };
-      return result;
-    }
-  );
+  const newPromise = new Promise(async (resolve, fail) => {
+    const response = await SmsAndroid.list(
+      JSON.stringify(filter),
+      (fail) => {
+        const data = {
+          status: false,
+          msg: "Failed with this error: " + fail,
+        };
+        return fail(data);
+      },
+      (count, smsList) => {
+        // let arr = JSON.parse(smsList);
+
+        // arr.forEach(function (object) {
+        //   // console.log(object);
+        //   smsObj.push(object); // push sms to array...
+        // });
+
+        // console.log('smsObj: ', smsObj);
+
+        return resolve({
+          smsList: smsList,
+          count: count,
+        });
+      }
+    );
+  });
+
+  return newPromise;
 };
 
 /**
@@ -382,7 +411,7 @@ const isCameraPresent = async () => {
     .then((isCameraPresent) => {
       return isCameraPresent;
     })
-    .catch((cameraAccessException) => { });
+    .catch((cameraAccessException) => {});
 };
 
 // Network
@@ -465,16 +494,16 @@ const affordabilityCheck = async (id, dti, loanTenure, authorization) => {
     const response = await axios(config)
       .then(function (response) {
         if (response.status === 200) {
-          return { 
-            status: true, 
-            data: response.data
+          return {
+            status: true,
+            data: response.data,
           };
         }
-        
+
         // other kind of response...
-        return { 
-          status: true, 
-          data: response.data
+        return {
+          status: true,
+          data: response.data,
         };
       })
       .catch(function (error) {
