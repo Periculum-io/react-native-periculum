@@ -91,7 +91,7 @@ affordability(authorization, 89, 0.2, 2).then(result => {
 | reference   | Required. Unique statement reference	|
 | DTI    | Required 	|
 | Loan Tenure   | Required. Loan tenure 	|
-
+&nbsp;
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
