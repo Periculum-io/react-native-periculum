@@ -7,338 +7,488 @@ import GetLocation from "react-native-get-location";
 import SmsAndroid from "react-native-get-sms-android";
 import axios from "axios";
 
-// import helpers
-import { analytics } from "./helpers.js";
+// Helpers
+// import {device} from './helpers.js';
 
 const ANALYTICS_URL = "https://api.insights-periculum.com/mobile/analytics";
 const INSIGHTS_URL = "https://api.insights-periculum.com/affordability";
 
-const Periculum = ({ authorization, options, btnStyles, btnText, btnTextStyle, callback }) => {
-  const [isLoading, setisLoading] = useState(false); // is loading....
-
-  // variables...
-  const [device, setDevice] = useState("");
-  const [deviceName, setDeviceName] = useState("");
-  const [firstInstallTime, setFirstInstallTime] = useState("");
-  const [apiLevel, setApiLevel] = useState("");
-  const [androidId, setAndroidId] = useState("");
-  const [fingerprint, setfingerprint] = useState("");
-  const [manufacturer, setmanufacturer] = useState("");
-  const [maxMemory, setmaxMemory] = useState("");
-  const [isCameraPresent, setisCameraPresent] = useState(false);
-
-  // Network
-  const [carrier, setcarrier] = useState("");
-  const [ip, setip] = useState("");
-  const [macAddress, setmacAddress] = useState("");
-
-  // location
-  const [location, setlocation] = useState({});
-
-  // SMS
-  const [sms, setsms] = useState([]);
-  const [smsCount, setsmscount] = useState([]);
-
-  // check for permissions
-  const permissions = async () => {
-    // request permissions for sms
-    request(PERMISSIONS.ANDROID.READ_SMS).then((result) => {
-      if (result !== "granted") {
-        onError({
-          status: false,
-          msg: "Permission to read sms was not granted",
-        });
-      }
-    });
-
-    request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then((result) => {
-      if (result !== "granted") {
-        onError({
-          status: false,
-          msg: "Permission not granted get location information!",
-        });
-      }
-    });
-
-    request(PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION).then((result) => {
-      if (result !== "granted") {
-        onError({
-          status: false,
-          msg: "Permission not granted get location information!",
-        });
-      }
-    });
-  };
-
-  const getLocation = async () => {
-    // location...
-    await GetLocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 15000,
-    })
-      .then((location) => {
-        setlocation(location);
-        // console.log({ location });
-      })
-      .catch((error) => {
-        const { code, message } = error;
-        // console.warn(code, message);
-      });
-  };
-
-  const filter = {
-    box: "inbox",
-  };
-  // sms data...
-  const smsData = async () => {
-    SmsAndroid.list(
-      JSON.stringify(filter),
-      (fail) => {
-        console.log("Failed with this error: " + fail);
-      },
-      (count, smsList) => {
-        console.log("Count: ", count);
-        // console.log("List: ", smsList);
-        setsmscount(count);
-        setsms(smsList);
-        var arr = JSON.parse(smsList);
-      }
-    );
-  };
-
-  useEffect(() => {
-    // get sms data
-    smsData();
-
-    // get location...
-    getLocation();
-
-    // The name of the industrial design.
-    DeviceInfo.getDevice().then((device) => {
-      setDevice(device);
-    });
-
-    // Gets the device name.
-    DeviceInfo.getDeviceName().then((deviceName) => {
-      setDeviceName(deviceName);
-    });
-
-    // Gets the time at which the app was first installed, in milliseconds.
-    DeviceInfo.getFirstInstallTime().then((firstInstallTime) => {
-      setFirstInstallTime(firstInstallTime);
-    });
-
-    // Gets the API level.
-    DeviceInfo.getApiLevel().then((apiLevel) => {
-      setApiLevel(apiLevel);
-    });
-
-    DeviceInfo.getAndroidId().then((androidId) => {
-      setAndroidId(androidId);
-    });
-
-    DeviceInfo.getFingerprint().then((fingerprint) => {
-      // "google/walleye/walleye:8.1.0/OPM2.171026.006.G1/4820017:user/release-keys"
-      setfingerprint(fingerprint.toString());
-    });
-
-    DeviceInfo.getManufacturer().then((manufacturer) => {
-      setmanufacturer(manufacturer);
-    });
-
-    DeviceInfo.getMaxMemory().then((maxMemory) => {
-      setmaxMemory(maxMemory);
-    });
-
-    DeviceInfo.isCameraPresent()
-      .then((isCameraPresent) => {
-        setisCameraPresent(isCameraPresent);
-      })
-      .catch((cameraAccessException) => {});
-
-    // Network
-    DeviceInfo.getCarrier().then((carrier) => {
-      setcarrier(carrier);
-    });
-
-    DeviceInfo.getIpAddress().then((ip) => {
-      setip(ip);
-    });
-
-    DeviceInfo.getMacAddress().then((mac) => {
-      setmacAddress(mac);
-    });
-  }, []);
-
-  // push analytics data...
-  const analytics = async (data) => {
+// analytics
+export const analytics = async (authorization, reference, mobile, bvn) => {
+  const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
-      const config = {
-        method: "post",
-        url: ANALYTICS_URL,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authorization}`,
-        },
-        data: data,
-      };
+      // check authorization...
+      if (!authorization) {
+        const ata = {
+          status: false,
+          msg: "Please enter authorization token!",
+        };
+        return reject(ata);
+      }
 
-      const result = await axios(config)
-        .then(function (response) {
-          // console.log({ response.data });
-          return {
-            status: true,
-            data: response.data,
-          };
-        })
-        .catch(function (error) {
-          return {
-            status: false,
-            data: error,
-          };
-        });
+      // check reference...
+      if (!reference) {
+        const data = {
+          status: false,
+          msg: "Please enter unique statement reference!",
+        };
+        return reject(data);
+      }
 
-      return result;
-    } catch (error) {
-      return {
-        status: false,
-        data: error,
-      };
-    }
-  };
+      // check mobile...
+      if (!mobile) {
+        const data = {
+          status: false,
+          msg: "Please enter client mobile number!",
+        };
+        return reject(data);
+      }
 
-  // const affordability data...
-  const affordabilityCheck = async (id) => {
-    try {
-      const config = {
-        method: "post",
-        url: INSIGHTS_URL,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authorization}`,
-        },
-        data: {
-          dti: options.dti,
-          statementKey: id, //
-          loanTenure: options.loanTenure,
-        },
-      };
+      // check bvn
+      if (!bvn) {
+        const data = {
+          status: false,
+          msg: "Please enter client bvn number!",
+        };
+        return reject(data);
+      }
 
-      const response = await axios(config)
-        .then(function (response) {
-          if (response.status === 200) {
-            return { 
-              status: true, 
-              data: response.data
-            };
-          }
-          
-          // other kind of response...
-          return { 
-            status: true, 
-            data: response.data
-          };
-        })
-        .catch(function (error) {
-          return {
-            status: false,
-            data: error,
-          };
-        });
+      // checkPermissions
+      const permission = await checkPermissions();
 
-      return response;
-    } catch (error) {
-      return {
-        status: false,
-        data: error,
-      };
-    }
-  };
+      // if permission is false then return error...
+      if (permission === false) {
+        const data = {
+          status: false,
+          msg: "Please check all permissions are granted!",
+        };
+        return reject(data);
+      }
 
-  const start = async () => {
-    // check permissions first...
-    permissions();
+      // get customer location...
+      const location = await getLocation();
 
-    try {
+      if (location.status === false) {
+        const data = {
+          status: false,
+          msg: "An error occurred when trying to get clients location!",
+        };
+        return reject(data);
+      }
+
+      // get sms data...
+      const smsData = await getSmsData();
+      const sms = {};
+      const smsCount = 0;
+
       // align the data......
       const data = {
-        statementName: options.reference,
+        statementName: reference,
         appName: DeviceInfo.getApplicationName(),
         bundleId: DeviceInfo.getBundleId(),
         version: DeviceInfo.getVersion(),
         device: {
-          device: device,
+          device: await device(),
           deviceId: DeviceInfo.getDeviceId(),
-          deviceName: deviceName,
-          firstInstallTime: firstInstallTime,
+          deviceName: await getDeviceName(),
+          firstInstallTime: await getFirstInstallTime(),
           baseOs: "Android",
-          apiLevel: apiLevel,
-          androidId: androidId,
+          apiLevel: await getApiLevel(),
+          androidId: await getAndroidId(),
           brand: DeviceInfo.getBrand(),
           buildNumber: DeviceInfo.getBuildNumber(),
-          fingerprint: fingerprint,
-          manufacturer: manufacturer,
-          maxMemory: maxMemory,
+          fingerprint: await getFingerprint(),
+          manufacturer: await getManufacturer(),
+          maxMemory: await getMaxMemory(),
           readableVersion: DeviceInfo.getReadableVersion(),
           uniqueId: DeviceInfo.getUniqueId(),
           isTablet: DeviceInfo.isTablet(),
           camera: {
-            isCameraPresent: isCameraPresent,
+            isCameraPresent: (await isCameraPresent()) ?? false,
           },
           network: {
-            carrier: carrier,
-            ip: ip,
-            macAddress: macAddress,
+            carrier: await getCarrier(),
+            ip: await getIpAddress(),
+            macAddress: await getMacAddress(),
           },
         },
         sms: {
-          data: JSON.parse(sms),
+          data: sms,
           count: smsCount,
         },
         metadata: {
           customer: {
-            phoneNumber: options.customer.mobile,
-            bvn: options.customer.bvn,
+            phoneNumber: mobile,
+            bvn: bvn,
           },
         },
-        location: location,
+        location: location.data ?? {},
       };
 
+      // make the http request call...
       // run analytics...
-      const analyticsData = await analytics(data); // run analytics...
-      // console.log({analyticsData});
+      const analyticsData = await analyticsHttpRequest(data, authorization); // run analytics...
 
-      // check the analytics data...
+      // all is good...
       if (analyticsData.status === true) {
-        const statementKey = analyticsData.data.key; // get the statement key
-        const affordability = await affordabilityCheck(statementKey);
+        const analyticsDataResponse = {
+          status: analyticsData.status,
+          data: analyticsData.data // analytics data...
+        };
 
-        if(affordability.status === true) {
-          return callback({
-            status: true,
-            data: affordability.data
-          });
-        }
+        // call resolve
+        resolve(analyticsDataResponse);
       }
 
-      callback({
-        status: false,
-        msg: 'Failed to analyse customer details.',
-      });
+      // failed....
+      if (analyticsData.status === false) {
+        const analyticsDataResponseFailed = {
+          status: analyticsData.status,
+          data: 'Failed to get customer analytics data, contact support if this persist!'
+        };
+
+        // call resolve
+        reject(analyticsDataResponseFailed)
+      }
+
+      // setTimeout(() => {
+      //   resolve(data);
+      // }, 300);
     } catch (error) {
-      console.error(error);
+      const data = {
+        status: false,
+        error: error,
+      };
+      return reject(data);
     }
+  });
+
+  return analyticsInfo;
+};
+
+// affordability
+
+export const affordability = async (authorization, statementKey, dti, loanTenure) => {
+  const analyticsInfo = new Promise(async (resolve, reject) => {
+    try {
+
+      // check authorization...
+      if (!authorization) {
+        const ata = {
+          status: false,
+          msg: "Please enter authorization token!",
+        };
+        return reject(ata);
+      }
+
+      // check reference...
+      if (!statementKey) {
+        const data = {
+          status: false,
+          msg: "Please enter unique statement reference!",
+        };
+        return reject(data);
+      }
+
+      // check mobile...
+      if (!dti) {
+        const data = {
+          status: false,
+          msg: "Please enter affordability DTI!",
+        };
+        return reject(data);
+      }
+
+      // check bvn
+      if (!loanTenure) {
+        const data = {
+          status: false,
+          msg: "Please enter affordability loan tenure!",
+        };
+        return reject(data);
+      }
+
+      // make the call...
+      const affordability = await affordabilityCheck(statementKey, dti, loanTenure, authorization);
+
+      if(affordability.status === true) {
+        return resolve({
+          status: true,
+          data: affordability.data
+        });
+      }
+
+      // failed...
+      return reject({
+        status: false,
+        msg: 'Failed to get statement affordability details.',
+      });
+
+    } catch (err) {
+      const data = {
+        status: false,
+        error: error,
+      };
+      return reject(data);
+    }
+  });
+  return analyticsInfo;
+};
+
+// check permissions
+const checkPermissions = async (permissions) => {
+  // request permissions for sms
+  request(PERMISSIONS.ANDROID.READ_SMS).then((result) => {
+    if (result !== "granted") {
+      return false;
+    }
+  });
+
+  // check permission for location...
+  request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then((result) => {
+    if (result !== "granted") {
+      return false;
+    }
+  });
+
+  // check permission for location...
+  request(PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION).then((result) => {
+    if (result !== "granted") {
+      return false;
+    }
+  });
+};
+
+// get customer location...
+const getLocation = async () => {
+  // location...
+  const location = await GetLocation.getCurrentPosition({
+    enableHighAccuracy: true,
+    timeout: 15000,
+  })
+    .then((location) => {
+      const data = {
+        status: true,
+        data: location,
+      };
+
+      return data;
+    })
+    .catch((error) => {
+      const data = {
+        status: false,
+        msg: error.message,
+      };
+      return data;
+    });
+
+  return location;
+};
+
+// sms data...
+const getSmsData = async () => {
+  const date = new Date(); // get date...
+
+  // max date...
+  const maxDate = date.getTime();
+
+  // min date...
+  date.setMonth(date.getMonth() - 6);
+  const minDate = date.getTime();
+
+  const filter = {
+    box: "inbox",
   };
 
-  return (
-    <View>
-      <TouchableOpacity style={btnStyles} onPress={start}>
-        <Text style={btnTextStyle}>{ btnText ?? 'Start processing'}</Text>
-      </TouchableOpacity>
-    </View>
+  SmsAndroid.list(
+    JSON.stringify(filter),
+    (fail) => {
+      const data = {
+        status: false,
+        msg: "Failed with this error: " + fail,
+      };
+      return data;
+    },
+    (count, smsList) => {
+      // return sms, smsList...
+
+      const result = {
+        status: true,
+        count: count,
+        smsList: smsList,
+      };
+      return result;
+    }
   );
 };
 
-export default Periculum;
+/**
+ * Get Device info...
+ */
+
+// The name of the industrial design.
+const device = async () => {
+  return DeviceInfo.getDevice().then((device) => {
+    return device;
+  });
+};
+
+// Gets the time at which the app was first installed, in milliseconds.
+const getFirstInstallTime = async () => {
+  return DeviceInfo.getFirstInstallTime().then((firstInstallTime) => {
+    return firstInstallTime;
+  });
+};
+
+// Gets the device name.
+const getDeviceName = async () => {
+  return DeviceInfo.getDeviceName().then((deviceName) => {
+    return deviceName;
+  });
+};
+
+const getApiLevel = async () => {
+  return DeviceInfo.getApiLevel().then((apiLevel) => {
+    return apiLevel;
+  });
+};
+
+const getAndroidId = async () => {
+  return DeviceInfo.getAndroidId().then((androidId) => {
+    return androidId;
+  });
+};
+
+const getFingerprint = async () => {
+  return DeviceInfo.getFingerprint().then((fingerprint) => {
+    return fingerprint.toString();
+  });
+};
+
+const getManufacturer = async () => {
+  return DeviceInfo.getManufacturer().then((manufacturer) => {
+    return manufacturer;
+  });
+};
+
+const getMaxMemory = async () => {
+  return DeviceInfo.getMaxMemory().then((maxMemory) => {
+    return maxMemory;
+  });
+};
+
+const isCameraPresent = async () => {
+  return DeviceInfo.isCameraPresent()
+    .then((isCameraPresent) => {
+      return isCameraPresent;
+    })
+    .catch((cameraAccessException) => { });
+};
+
+// Network
+const getCarrier = async () => {
+  return DeviceInfo.getCarrier().then((carrier) => {
+    return carrier;
+  });
+};
+
+const getIpAddress = async () => {
+  return DeviceInfo.getIpAddress().then((ip) => {
+    return ip;
+  });
+};
+
+const getMacAddress = async () => {
+  return DeviceInfo.getMacAddress().then((mac) => {
+    return mac;
+  });
+};
+
+// push analytics data...
+const analyticsHttpRequest = async (data, authorization) => {
+  try {
+    const config = {
+      method: "post",
+      url: ANALYTICS_URL,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authorization}`,
+      },
+      data: data,
+    };
+
+    const result = await axios(config)
+      .then(function (response) {
+        console.log({ response });
+        return {
+          status: true,
+          data: response.data,
+        };
+      })
+      .catch(function (error) {
+        console.log({ error });
+        return {
+          status: false,
+          data: error,
+        };
+      });
+
+    return result;
+  } catch (error) {
+    console.log({ error });
+    return {
+      status: false,
+      data: error,
+    };
+  }
+};
+
+// const affordability data...
+const affordabilityCheck = async (id, dti, loanTenure, authorization) => {
+  try {
+    const config = {
+      method: "post",
+      url: INSIGHTS_URL,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authorization}`,
+      },
+      data: {
+        dti: dti,
+        statementKey: id, //
+        loanTenure: loanTenure,
+      },
+    };
+
+    const response = await axios(config)
+      .then(function (response) {
+        if (response.status === 200) {
+          return { 
+            status: true, 
+            data: response.data
+          };
+        }
+        
+        // other kind of response...
+        return { 
+          status: true, 
+          data: response.data
+        };
+      })
+      .catch(function (error) {
+        return {
+          status: false,
+          data: error,
+        };
+      });
+
+    return response;
+  } catch (error) {
+    return {
+      status: false,
+      data: error,
+    };
+  }
+};
