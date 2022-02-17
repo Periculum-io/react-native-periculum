@@ -25,31 +25,31 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       }
 
       // check reference...
-      if (!reference) {
-        const data = {
-          status: false,
-          msg: "Please enter unique statement reference!",
-        };
-        return reject(data);
-      }
+      // if (!reference) {
+      //   const data = {
+      //     status: false,
+      //     msg: "Please enter unique statement reference!",
+      //   };
+      //   return reject(data);
+      // }
 
-      // check mobile...
-      if (!mobile) {
-        const data = {
-          status: false,
-          msg: "Please enter client mobile number!",
-        };
-        return reject(data);
-      }
+      // // check mobile...
+      // if (!mobile) {
+      //   const data = {
+      //     status: false,
+      //     msg: "Please enter client mobile number!",
+      //   };
+      //   return reject(data);
+      // }
 
-      // check bvn
-      if (!bvn) {
-        const data = {
-          status: false,
-          msg: "Please enter client bvn number!",
-        };
-        return reject(data);
-      }
+      // // check bvn
+      // if (!bvn) {
+      //   const data = {
+      //     status: false,
+      //     msg: "Please enter client bvn number!",
+      //   };
+      //   return reject(data);
+      // }
 
       // checkPermissions
       const permission = await checkPermissions();
@@ -80,7 +80,6 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
           return result;
         })
         .catch((error) => {
-          console.log({ error });
           return error;
         });
 
@@ -89,7 +88,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
 
       // align the data......
       const data = {
-        statementName: reference,
+        statementName: reference ?? await uniqueReference(),
         appName: DeviceInfo.getApplicationName(),
         bundleId: DeviceInfo.getBundleId(),
         version: DeviceInfo.getVersion(),
@@ -124,14 +123,12 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
         },
         metadata: {
           customer: {
-            phoneNumber: mobile,
-            bvn: bvn,
+            phoneNumber: mobile ?? null,
+            bvn: bvn ?? null,
           },
         },
         location: location.data,
       };
-
-      console.log(JSON.stringify(data));
 
       // make the http request call...
       // run analytics...
@@ -180,7 +177,9 @@ export const affordability = async (
   authorization,
   statementKey,
   dti,
-  loanTenure
+  loanTenure,
+  averageMonthlyTotalExpenses,
+  averageMonthlyLoanRepaymentAmount
 ) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
@@ -225,7 +224,9 @@ export const affordability = async (
         statementKey,
         dti,
         loanTenure,
-        authorization
+        authorization,
+        averageMonthlyTotalExpenses,
+        averageMonthlyLoanRepaymentAmount
       );
 
       if (affordability.status === true) {
@@ -331,15 +332,6 @@ const getSmsData = async () => {
         return fail(data);
       },
       (count, smsList) => {
-        // let arr = JSON.parse(smsList);
-
-        // arr.forEach(function (object) {
-        //   // console.log(object);
-        //   smsObj.push(object); // push sms to array...
-        // });
-
-        // console.log('smsObj: ', smsObj);
-
         return resolve({
           smsList: smsList,
           count: count,
@@ -411,7 +403,7 @@ const isCameraPresent = async () => {
     .then((isCameraPresent) => {
       return isCameraPresent;
     })
-    .catch((cameraAccessException) => {});
+    .catch((cameraAccessException) => { });
 };
 
 // Network
@@ -433,6 +425,11 @@ const getMacAddress = async () => {
   });
 };
 
+// create unique reference
+const uniqueReference = async () => {
+  return Math.floor(new Date().getTime() / 1000).toString();
+};
+
 // push analytics data...
 const analyticsHttpRequest = async (data, authorization) => {
   try {
@@ -449,14 +446,12 @@ const analyticsHttpRequest = async (data, authorization) => {
 
     const result = await axios(config)
       .then(function (response) {
-        console.log({ response });
         return {
           status: true,
           data: response.data,
         };
       })
       .catch(function (error) {
-        console.log({ error });
         return {
           status: false,
           data: error,
@@ -465,7 +460,6 @@ const analyticsHttpRequest = async (data, authorization) => {
 
     return result;
   } catch (error) {
-    console.log({ error });
     return {
       status: false,
       data: error,
@@ -474,7 +468,7 @@ const analyticsHttpRequest = async (data, authorization) => {
 };
 
 // const affordability data...
-const affordabilityCheck = async (id, dti, loanTenure, authorization) => {
+const affordabilityCheck = async (id, dti, loanTenure, authorization, averageMonthlyTotalExpenses, averageMonthlyLoanRepaymentAmount) => {
   try {
     const config = {
       method: "post",
@@ -488,6 +482,8 @@ const affordabilityCheck = async (id, dti, loanTenure, authorization) => {
         dti: dti,
         statementKey: id, //
         loanTenure: loanTenure,
+        averageMonthlyTotalExpenses: averageMonthlyTotalExpenses ?? null,
+        averageMonthlyLoanRepaymentAmount: averageMonthlyLoanRepaymentAmount ?? null
       },
     };
 
