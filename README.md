@@ -49,7 +49,7 @@ How to use the Periculum analytics method
 import React from 'react';
 import {analytics} from 'react-native-periculum';
 
-await analytics(authorization, reference, '08066518328', '0000000111')
+await analytics(authorization, statementName, customerMobile, customerBvn)
 	.then(result => {
 		console.log({result});
 	})
@@ -59,12 +59,12 @@ await analytics(authorization, reference, '08066518328', '0000000111')
 ```
 
 ## Periculum analytics parameters 
-| Name | Description  |
-| ------ | ------ |
-| authorization  | Required. API access token generated from periculum api|
-| reference   | Required. unique statement reference	|
-| customer mobile   | Required. customer phone number	|
-| customer bvn   | Required. customer bvn	|
+| Name | Description  | Type | Required |
+| ------ | ------ |  ------ |  ------ |
+| authorization  | Required. API access token generated from periculum api| String | Yes|
+| statementName    | unique statement reference	| String | No |
+| customerMobile   | Required. customer phone number | String | No |
+| customerBvn   | customer bvn	| String | No |
 
 &nbsp;
 &nbsp;
@@ -76,7 +76,7 @@ How to use the Periculum analytics method
 import React from 'react';
 import {analytics} from 'react-native-periculum';
 
-affordability(authorization, 89, 0.2, 2).then(result => {
+affordability(authorization, statementKey , dti, loanTenure).then(result => {
       console.log({result});
     })
     .catch(error => {
@@ -85,12 +85,23 @@ affordability(authorization, 89, 0.2, 2).then(result => {
 ```
 
 ## Periculum affordability parameters 
-| Name | Description  |
-| ------ | ------ |
-| authorization  | Required. API access token generated from periculum api|
-| reference   | Required. Unique statement reference	|
-| DTI    | Required 	|
-| Loan Tenure   | Required. Loan tenure 	|
+| Name | Description  | Type| Required |
+| ---- | ------ | ------ | ------ |
+| authorization  |  API access token generated from periculum api| String | Yes |
+| statementKey    |  Unique statement reference	| int | Yes |
+| dti | Debt to income ratio for the affordability analysis. | double (between 0-1)  | Yes |
+| loanTenure    | The period of the loan in months.	 	| int | Yes |
+| averageMonthlyTotalExpenses     |  Average Monthly Total Expenses 	| double | No |
+| averageMonthlyLoanRepaymentAmount  | Average Monthly Loan Repayment Amount | double | No |
+
+&nbsp;
+## Authentication
+To utilize any of Insights endpoints, your app is required to first identify and authorize itself against an authorization server by obtaining an access token.
+
+To authenticate against the authorization server, you must ensure that you have received your app’s client_id and client_secret from Periculum. Without these, your app will be unable to obtain an access token and call endpoints on the Insights API. If you have not obtained your client_id or client_secret, then you should contact Periculum standard support channel (email support@periculum.io).
+
+![alt text](https://raw.githubusercontent.com/Francis-nova/react-native-periculum/main/images/auth.png)
+
 &nbsp;
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
