@@ -1,12 +1,8 @@
 import { request, PERMISSIONS } from "react-native-permissions";
-import shortid from "shortid";
 import DeviceInfo from "react-native-device-info";
 import GetLocation from "react-native-get-location";
 import SmsAndroid from "react-native-get-sms-android";
 import axios from "axios";
-
-// Helpers
-// import {device} from './helpers.js';
 
 const ANALYTICS_URL = "https://api.insights-periculum.com/mobile/analytics";
 const INSIGHTS_URL = "https://api.insights-periculum.com/affordability";
@@ -23,33 +19,6 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
         };
         return reject(ata);
       }
-
-      // check reference...
-      // if (!reference) {
-      //   const data = {
-      //     status: false,
-      //     msg: "Please enter unique statement reference!",
-      //   };
-      //   return reject(data);
-      // }
-
-      // // check mobile...
-      // if (!mobile) {
-      //   const data = {
-      //     status: false,
-      //     msg: "Please enter client mobile number!",
-      //   };
-      //   return reject(data);
-      // }
-
-      // // check bvn
-      // if (!bvn) {
-      //   const data = {
-      //     status: false,
-      //     msg: "Please enter client bvn number!",
-      //   };
-      //   return reject(data);
-      // }
 
       // checkPermissions
       const permission = await checkPermissions();

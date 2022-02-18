@@ -33,8 +33,7 @@
     "react-native-device-info": "^8.4.8",
     "react-native-get-location": "^2.2.1",
     "react-native-get-sms-android": "^2.1.0",
-    "react-native-permissions": "^3.2.0",
-    "shortid": "^2.2.16"
+    "react-native-permissions": "^3.2.0"
   },
   "devDependencies": {
     "eslint": "^8.9.0"

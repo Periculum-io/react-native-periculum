@@ -88,11 +88,11 @@ affordability(authorization, statementKey , dti, loanTenure).then(result => {
 | Name | Description  | Type| Required |
 | ---- | ------ | ------ | ------ |
 | authorization  |  API access token generated from periculum api| String | Yes |
-| statementKey    |  Unique statement reference	| int | Yes |
+| statementKey |  Unique statement reference	| int | Yes |
 | dti | Debt to income ratio for the affordability analysis. | double (between 0-1)  | Yes |
-| loanTenure    | The period of the loan in months.	 	| int | Yes |
-| averageMonthlyTotalExpenses     |  Average Monthly Total Expenses 	| double | No |
-| averageMonthlyLoanRepaymentAmount  | Average Monthly Loan Repayment Amount | double | No |
+| loanTenure    | The period of the loan in months. | int | Yes |
+| averageMonthlyTotalExpenses |  Average Monthly Total Expenses 	| double | No |
+| averageMonthlyLoanRepaymentAmount | Average Monthly Loan Repayment Amount | double | No |
 
 &nbsp;
 ## Authentication
