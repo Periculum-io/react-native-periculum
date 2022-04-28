@@ -1,12 +1,13 @@
-import { request, PERMISSIONS } from "react-native-permissions";
-import DeviceInfo from "react-native-device-info";
-import GetLocation from "react-native-get-location";
-import SmsAndroid from "react-native-get-sms-android";
-import axios from "axios";
+import {request, PERMISSIONS} from 'react-native-permissions';
+import DeviceInfo from 'react-native-device-info';
+import GetLocation from 'react-native-get-location';
+import SmsAndroid from 'react-native-get-sms-android';
+import axios from 'axios';
 
-const ANALYTICS_URL = "https://api.insights-periculum.com/mobile/analytics";
-const INSIGHTS_URL = "https://api.insights-periculum.com/affordability";
+const ANALYTICS_URL = 'https://api.insights-periculum.com/mobile/analytics';
+const INSIGHTS_URL = 'https://api.insights-periculum.com/affordability';
 
+export * from './indexV2.js';
 // analytics
 export const analytics = async (authorization, reference, mobile, bvn) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
@@ -15,7 +16,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       if (!authorization) {
         const ata = {
           status: false,
-          msg: "Please enter authorization token!",
+          msg: 'Please enter authorization token!',
         };
         return reject(ata);
       }
@@ -27,7 +28,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       if (permission === false) {
         const data = {
           status: false,
-          msg: "Please check all permissions are granted!",
+          msg: 'Please check all permissions are granted!',
         };
         return reject(data);
       }
@@ -38,17 +39,17 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       if (location.status === false) {
         const data = {
           status: false,
-          msg: "An error occurred when trying to get clients location!",
+          msg: 'An error occurred when trying to get clients location!',
         };
         return reject(data);
       }
 
       // get sms data...
       const smsData = await getSmsData()
-        .then((result) => {
+        .then(result => {
           return result;
         })
-        .catch((error) => {
+        .catch(error => {
           return error;
         });
 
@@ -57,7 +58,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
 
       // align the data......
       const data = {
-        statementName: reference ?? await uniqueReference(),
+        statementName: reference ?? (await uniqueReference()),
         appName: DeviceInfo.getApplicationName(),
         bundleId: DeviceInfo.getBundleId(),
         version: DeviceInfo.getVersion(),
@@ -66,7 +67,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
           deviceId: DeviceInfo.getDeviceId(),
           deviceName: await getDeviceName(),
           firstInstallTime: await getFirstInstallTime(),
-          baseOs: "Android",
+          baseOs: 'Android',
           apiLevel: await getApiLevel(),
           androidId: await getAndroidId(),
           brand: DeviceInfo.getBrand(),
@@ -118,7 +119,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       if (analyticsData.status === false) {
         const analyticsDataResponseFailed = {
           status: analyticsData.status,
-          data: "Failed to get customer analytics data, contact support if this persist!",
+          data: 'Failed to get customer analytics data, contact support if this persist!',
         };
 
         // call resolve
@@ -148,7 +149,7 @@ export const affordability = async (
   dti,
   loanTenure,
   averageMonthlyTotalExpenses,
-  averageMonthlyLoanRepaymentAmount
+  averageMonthlyLoanRepaymentAmount,
 ) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
@@ -156,7 +157,7 @@ export const affordability = async (
       if (!authorization) {
         const ata = {
           status: false,
-          msg: "Please enter authorization token!",
+          msg: 'Please enter authorization token!',
         };
         return reject(ata);
       }
@@ -165,7 +166,7 @@ export const affordability = async (
       if (!statementKey) {
         const data = {
           status: false,
-          msg: "Please enter unique statement reference!",
+          msg: 'Please enter unique statement reference!',
         };
         return reject(data);
       }
@@ -174,7 +175,7 @@ export const affordability = async (
       if (!dti) {
         const data = {
           status: false,
-          msg: "Please enter affordability DTI!",
+          msg: 'Please enter affordability DTI!',
         };
         return reject(data);
       }
@@ -183,7 +184,7 @@ export const affordability = async (
       if (!loanTenure) {
         const data = {
           status: false,
-          msg: "Please enter affordability loan tenure!",
+          msg: 'Please enter affordability loan tenure!',
         };
         return reject(data);
       }
@@ -195,7 +196,7 @@ export const affordability = async (
         loanTenure,
         authorization,
         averageMonthlyTotalExpenses,
-        averageMonthlyLoanRepaymentAmount
+        averageMonthlyLoanRepaymentAmount,
       );
 
       if (affordability.status === true) {
@@ -208,7 +209,7 @@ export const affordability = async (
       // failed...
       return reject({
         status: false,
-        msg: "Failed to get statement affordability details.",
+        msg: 'Failed to get statement affordability details.',
       });
     } catch (err) {
       const data = {
@@ -222,24 +223,24 @@ export const affordability = async (
 };
 
 // check permissions
-const checkPermissions = async (permissions) => {
+const checkPermissions = async permissions => {
   // request permissions for sms
-  request(PERMISSIONS.ANDROID.READ_SMS).then((result) => {
-    if (result !== "granted") {
+  request(PERMISSIONS.ANDROID.READ_SMS).then(result => {
+    if (result !== 'granted') {
       return false;
     }
   });
 
   // check permission for location...
-  request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then((result) => {
-    if (result !== "granted") {
+  request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(result => {
+    if (result !== 'granted') {
       return false;
     }
   });
 
   // check permission for location...
-  request(PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION).then((result) => {
-    if (result !== "granted") {
+  request(PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION).then(result => {
+    if (result !== 'granted') {
       return false;
     }
   });
@@ -252,7 +253,7 @@ const getLocation = async () => {
     enableHighAccuracy: true,
     timeout: 15000,
   })
-    .then((location) => {
+    .then(location => {
       const data = {
         status: true,
         data: location,
@@ -260,7 +261,7 @@ const getLocation = async () => {
 
       return data;
     })
-    .catch((error) => {
+    .catch(error => {
       const data = {
         status: false,
         msg: error.message,
@@ -283,7 +284,7 @@ const getSmsData = async () => {
   const minDate = date.getTime();
 
   const filter = {
-    box: "inbox",
+    box: 'inbox',
     minDate: minDate, // timestamp (in milliseconds since UNIX epoch)
     maxDate: maxDate, // timestamp (in milliseconds since UNIX epoch)
   };
@@ -293,10 +294,10 @@ const getSmsData = async () => {
   const newPromise = new Promise(async (resolve, fail) => {
     const response = await SmsAndroid.list(
       JSON.stringify(filter),
-      (fail) => {
+      fail => {
         const data = {
           status: false,
-          msg: "Failed with this error: " + fail,
+          msg: 'Failed with this error: ' + fail,
         };
         return fail(data);
       },
@@ -305,7 +306,7 @@ const getSmsData = async () => {
           smsList: smsList,
           count: count,
         });
-      }
+      },
     );
   });
 
@@ -318,78 +319,78 @@ const getSmsData = async () => {
 
 // The name of the industrial design.
 const device = async () => {
-  return DeviceInfo.getDevice().then((device) => {
+  return DeviceInfo.getDevice().then(device => {
     return device;
   });
 };
 
 // Gets the time at which the app was first installed, in milliseconds.
 const getFirstInstallTime = async () => {
-  return DeviceInfo.getFirstInstallTime().then((firstInstallTime) => {
+  return DeviceInfo.getFirstInstallTime().then(firstInstallTime => {
     return firstInstallTime;
   });
 };
 
 // Gets the device name.
 const getDeviceName = async () => {
-  return DeviceInfo.getDeviceName().then((deviceName) => {
+  return DeviceInfo.getDeviceName().then(deviceName => {
     return deviceName;
   });
 };
 
 const getApiLevel = async () => {
-  return DeviceInfo.getApiLevel().then((apiLevel) => {
+  return DeviceInfo.getApiLevel().then(apiLevel => {
     return apiLevel;
   });
 };
 
 const getAndroidId = async () => {
-  return DeviceInfo.getAndroidId().then((androidId) => {
+  return DeviceInfo.getAndroidId().then(androidId => {
     return androidId;
   });
 };
 
 const getFingerprint = async () => {
-  return DeviceInfo.getFingerprint().then((fingerprint) => {
+  return DeviceInfo.getFingerprint().then(fingerprint => {
     return fingerprint.toString();
   });
 };
 
 const getManufacturer = async () => {
-  return DeviceInfo.getManufacturer().then((manufacturer) => {
+  return DeviceInfo.getManufacturer().then(manufacturer => {
     return manufacturer;
   });
 };
 
 const getMaxMemory = async () => {
-  return DeviceInfo.getMaxMemory().then((maxMemory) => {
+  return DeviceInfo.getMaxMemory().then(maxMemory => {
     return maxMemory;
   });
 };
 
 const isCameraPresent = async () => {
   return DeviceInfo.isCameraPresent()
-    .then((isCameraPresent) => {
+    .then(isCameraPresent => {
       return isCameraPresent;
     })
-    .catch((cameraAccessException) => { });
+    .catch(cameraAccessException => {});
 };
 
 // Network
 const getCarrier = async () => {
-  return DeviceInfo.getCarrier().then((carrier) => {
+  return DeviceInfo.getCarrier().then(carrier => {
     return carrier;
   });
 };
 
 const getIpAddress = async () => {
-  return DeviceInfo.getIpAddress().then((ip) => {
+  return DeviceInfo.getIpAddress().then(ip => {
     return ip;
   });
 };
 
 const getMacAddress = async () => {
-  return DeviceInfo.getMacAddress().then((mac) => {
+  return DeviceInfo.getMacAddress().then(mac => {
     return mac;
   });
 };
@@ -403,11 +404,11 @@ const uniqueReference = async () => {
 const analyticsHttpRequest = async (data, authorization) => {
   try {
     const config = {
-      method: "post",
+      method: 'post',
       url: ANALYTICS_URL,
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${authorization}`,
       },
       data: data,
@@ -437,14 +438,21 @@ const analyticsHttpRequest = async (data, authorization) => {
 };
 
 // const affordability data...
-const affordabilityCheck = async (id, dti, loanTenure, authorization, averageMonthlyTotalExpenses, averageMonthlyLoanRepaymentAmount) => {
+const affordabilityCheck = async (
+  id,
+  dti,
+  loanTenure,
+  authorization,
+  averageMonthlyTotalExpenses,
+  averageMonthlyLoanRepaymentAmount,
+) => {
   try {
     const config = {
-      method: "post",
+      method: 'post',
       url: INSIGHTS_URL,
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${authorization}`,
       },
       data: {
@@ -452,7 +460,8 @@ const affordabilityCheck = async (id, dti, loanTenure, authorization, averageMon
         statementKey: id, //
         loanTenure: loanTenure,
         averageMonthlyTotalExpenses: averageMonthlyTotalExpenses ?? null,
-        averageMonthlyLoanRepaymentAmount: averageMonthlyLoanRepaymentAmount ?? null
+        averageMonthlyLoanRepaymentAmount:
+          averageMonthlyLoanRepaymentAmount ?? null,
       },
     };
 
