@@ -8,6 +8,7 @@ export const fetchRequest = async ({
   data = undefined,
   method = 'POST',
 }) => {
+  console.log(method);
   if (!authorization) {
     console.error({status: false, msg: 'Please enter authorization token!'});
     throw {status: false, msg: 'Please enter authorization token!'};
@@ -30,6 +31,8 @@ export const fetchRequest = async ({
           response = await instance.post(path, data);
         } else if (method == 'PUT') {
           response = await instance.put(path, data);
+        } else if (method == 'PATCH') {
+          response = await instance.patch(path, JSON.stringify(data));
         } else {
           response = await instance.get(path);
         }

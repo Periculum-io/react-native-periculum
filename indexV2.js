@@ -98,3 +98,26 @@ export const getExistingStatementAffordabilityAnalysis = async (
     }
   }
 };
+
+export const attachCustomerIdentificationInformationToAStatement = async (
+  authorization,
+  statementKey,
+  identificationData,
+) => {
+  if (!statementKey) {
+    throw {status: false, msg: 'Please include a statement key'};
+  } else {
+    try {
+      const response = await fetchRequest({
+        authorization,
+        path: `/statements/identification`,
+        method: 'PATCH',
+        data: {statementKey, identificationData},
+      });
+
+      return {status: true};
+    } catch (error) {
+      throw {status: false, msg: error?.msg || error};
+    }
+  }
+};
