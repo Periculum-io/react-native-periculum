@@ -1,6 +1,5 @@
 import axios from 'axios';
 import API from './api';
-import auth from './auth';
 
 export const fetchRequest = async ({
   authorization = null,
@@ -8,7 +7,6 @@ export const fetchRequest = async ({
   data = undefined,
   method = 'POST',
 }) => {
-  console.log(method);
   if (!authorization) {
     console.error({status: false, msg: 'Please enter authorization token!'});
     throw {status: false, msg: 'Please enter authorization token!'};
