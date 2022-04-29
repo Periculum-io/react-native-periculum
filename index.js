@@ -1,9 +1,4 @@
-import {
-  request,
-  PERMISSIONS,
-  checkMultiple,
-  requestMultiple,
-} from 'react-native-permissions';
+import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
 import GetLocation from 'react-native-get-location';
 import SmsAndroid from 'react-native-get-sms-android';
