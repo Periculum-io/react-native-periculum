@@ -1,4 +1,4 @@
-import {request, PERMISSIONS} from 'react-native-permissions';
+import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
 import GetLocation from 'react-native-get-location';
 import SmsAndroid from 'react-native-get-sms-android';
@@ -8,6 +8,7 @@ const ANALYTICS_URL = 'https://api.insights-periculum.com/mobile/analytics';
 const INSIGHTS_URL = 'https://api.insights-periculum.com/affordability';
 
 export * from './indexV2.js';
+
 // analytics
 export const analytics = async (authorization, reference, mobile, bvn) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
@@ -125,10 +126,6 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
         // call resolve
         reject(analyticsDataResponseFailed);
       }
-
-      // setTimeout(() => {
-      //   resolve(data);
-      // }, 300);
     } catch (error) {
       const data = {
         status: false,
@@ -157,7 +154,7 @@ export const affordability = async (
       if (!authorization) {
         const ata = {
           status: false,
-          msg: 'Please enter authorization token!',
+          msg: 'Please enter access token!',
         };
         return reject(ata);
       }
@@ -223,27 +220,22 @@ export const affordability = async (
 };
 
 // check permissions
-const checkPermissions = async permissions => {
-  // request permissions for sms
-  request(PERMISSIONS.ANDROID.READ_SMS).then(result => {
-    if (result !== 'granted') {
-      return false;
-    }
-  });
+const checkPermissions = async () => {
+  const statuses = await requestMultiple([
+    PERMISSIONS.ANDROID.READ_SMS,
+    PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+    PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION,
+  ]);
 
-  // check permission for location...
-  request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(result => {
-    if (result !== 'granted') {
-      return false;
-    }
-  });
-
-  // check permission for location...
-  request(PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION).then(result => {
-    if (result !== 'granted') {
-      return false;
-    }
-  });
+  if (
+    statuses[PERMISSIONS.ANDROID.READ_SMS] == 'granted' &&
+    statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION] == 'granted' &&
+    statuses[PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION] == 'granted'
+  ) {
+    return true;
+  } else {
+    return false;
+  }
 };
 
 // get customer location...
@@ -291,15 +283,15 @@ const getSmsData = async () => {
 
   let smsObj = [];
 
-  const newPromise = new Promise(async (resolve, fail) => {
-    const response = await SmsAndroid.list(
+  const newPromise = new Promise(async (resolve, reject) => {
+    await SmsAndroid.list(
       JSON.stringify(filter),
       fail => {
         const data = {
           status: false,
           msg: 'Failed with this error: ' + fail,
         };
-        return fail(data);
+        return reject(data);
       },
       (count, smsList) => {
         return resolve({
