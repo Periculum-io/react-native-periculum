@@ -1,4 +1,5 @@
 import {fetchRequest} from './fetchRequest';
+import {validateIdentificationData} from './helpers';
 
 export const getStatementTransactions = async (authorization, statementKey) => {
   if (!statementKey) {
@@ -104,20 +105,22 @@ export const attachCustomerIdentificationInformationToAStatement = async (
   statementKey,
   identificationData,
 ) => {
-  if (!statementKey) {
-    throw {status: false, msg: 'Please include a statement key'};
-  } else {
-    try {
-      const response = await fetchRequest({
-        authorization,
-        path: `/statements/identification`,
-        method: 'PATCH',
-        data: {statementKey, identificationData},
-      });
+  if (validateIdentificationData(identificationData)) {
+    if (!statementKey) {
+      throw {status: false, msg: 'Please include a statement key'};
+    } else {
+      try {
+        await fetchRequest({
+          authorization,
+          path: `/statements/identification`,
+          method: 'PATCH',
+          data: {statementKey, identificationData},
+        });
 
-      return {status: true};
-    } catch (error) {
-      throw {status: false, msg: error?.msg || error};
+        return {status: true};
+      } catch (error) {
+        throw {status: false, msg: error?.msg || error};
+      }
     }
   }
 };
