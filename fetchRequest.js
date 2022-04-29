@@ -8,7 +8,6 @@ export const fetchRequest = async ({
   data = undefined,
   method = 'POST',
 }) => {
-  console.log(method);
   if (!authorization) {
     console.error({status: false, msg: 'Please enter authorization token!'});
     throw {status: false, msg: 'Please enter authorization token!'};
@@ -39,7 +38,6 @@ export const fetchRequest = async ({
 
         return response?.data;
       } catch (error) {
-        // console.error(error?.message || error);
         throw error;
       } finally {
       }
