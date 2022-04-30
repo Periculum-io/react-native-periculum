@@ -1,13 +1,26 @@
-import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
-import GetLocation from 'react-native-get-location';
-import SmsAndroid from 'react-native-get-sms-android';
 import axios from 'axios';
-
-const ANALYTICS_URL = 'https://api.insights-periculum.com/mobile/analytics';
-const INSIGHTS_URL = 'https://api.insights-periculum.com/affordability';
-
-export * from './indexV2.js';
+import {fetchRequest} from './fetchRequest';
+import {
+  checkPermissions,
+  device,
+  getAndroidId,
+  getApiLevel,
+  getCarrier,
+  getDeviceName,
+  getFingerprint,
+  getFirstInstallTime,
+  getIpAddress,
+  getLocation,
+  getMacAddress,
+  getManufacturer,
+  getMaxMemory,
+  getSmsData,
+  isCameraPresent,
+  uniqueReference,
+  validateIdentificationData,
+} from './helpers';
+import API from './api';
 
 // analytics
 export const analytics = async (authorization, reference, mobile, bvn) => {
@@ -17,7 +30,7 @@ export const analytics = async (authorization, reference, mobile, bvn) => {
       if (!authorization) {
         const ata = {
           status: false,
-          msg: 'Please enter authorization token!',
+          msg: 'Please enter access token!',
         };
         return reject(ata);
       }
@@ -219,216 +232,6 @@ export const affordability = async (
   return analyticsInfo;
 };
 
-// check permissions
-const checkPermissions = async () => {
-  const statuses = await requestMultiple([
-    PERMISSIONS.ANDROID.READ_SMS,
-    PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
-    PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION,
-  ]);
-
-  if (
-    statuses[PERMISSIONS.ANDROID.READ_SMS] == 'granted' &&
-    statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION] == 'granted' &&
-    statuses[PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION] == 'granted'
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
-// get customer location...
-const getLocation = async () => {
-  // location...
-  const location = await GetLocation.getCurrentPosition({
-    enableHighAccuracy: true,
-    timeout: 15000,
-  })
-    .then(location => {
-      const data = {
-        status: true,
-        data: location,
-      };
-
-      return data;
-    })
-    .catch(error => {
-      const data = {
-        status: false,
-        msg: error.message,
-      };
-      return data;
-    });
-
-  return location;
-};
-
-// sms data...
-const getSmsData = async () => {
-  const date = new Date(); // get date...
-
-  // max date...
-  const maxDate = date.getTime();
-
-  // min date...
-  date.setMonth(date.getMonth() - 6);
-  const minDate = date.getTime();
-
-  const filter = {
-    box: 'inbox',
-    minDate: minDate, // timestamp (in milliseconds since UNIX epoch)
-    maxDate: maxDate, // timestamp (in milliseconds since UNIX epoch)
-  };
-
-  let smsObj = [];
-
-  const newPromise = new Promise(async (resolve, reject) => {
-    await SmsAndroid.list(
-      JSON.stringify(filter),
-      fail => {
-        const data = {
-          status: false,
-          msg: 'Failed with this error: ' + fail,
-        };
-        return reject(data);
-      },
-      (count, smsList) => {
-        return resolve({
-          smsList: smsList,
-          count: count,
-        });
-      },
-    );
-  });
-
-  return newPromise;
-};
-
-/**
- * Get Device info...
- */
-
-// The name of the industrial design.
-const device = async () => {
-  return DeviceInfo.getDevice().then(device => {
-    return device;
-  });
-};
-
-// Gets the time at which the app was first installed, in milliseconds.
-const getFirstInstallTime = async () => {
-  return DeviceInfo.getFirstInstallTime().then(firstInstallTime => {
-    return firstInstallTime;
-  });
-};
-
-// Gets the device name.
-const getDeviceName = async () => {
-  return DeviceInfo.getDeviceName().then(deviceName => {
-    return deviceName;
-  });
-};
-
-const getApiLevel = async () => {
-  return DeviceInfo.getApiLevel().then(apiLevel => {
-    return apiLevel;
-  });
-};
-
-const getAndroidId = async () => {
-  return DeviceInfo.getAndroidId().then(androidId => {
-    return androidId;
-  });
-};
-
-const getFingerprint = async () => {
-  return DeviceInfo.getFingerprint().then(fingerprint => {
-    return fingerprint.toString();
-  });
-};
-
-const getManufacturer = async () => {
-  return DeviceInfo.getManufacturer().then(manufacturer => {
-    return manufacturer;
-  });
-};
-
-const getMaxMemory = async () => {
-  return DeviceInfo.getMaxMemory().then(maxMemory => {
-    return maxMemory;
-  });
-};
-
-const isCameraPresent = async () => {
-  return DeviceInfo.isCameraPresent()
-    .then(isCameraPresent => {
-      return isCameraPresent;
-    })
-    .catch(cameraAccessException => {});
-};
-
-// Network
-const getCarrier = async () => {
-  return DeviceInfo.getCarrier().then(carrier => {
-    return carrier;
-  });
-};
-
-const getIpAddress = async () => {
-  return DeviceInfo.getIpAddress().then(ip => {
-    return ip;
-  });
-};
-
-const getMacAddress = async () => {
-  return DeviceInfo.getMacAddress().then(mac => {
-    return mac;
-  });
-};
-
-// create unique reference
-const uniqueReference = async () => {
-  return Math.floor(new Date().getTime() / 1000).toString();
-};
-
-// push analytics data...
-const analyticsHttpRequest = async (data, authorization) => {
-  try {
-    const config = {
-      method: 'post',
-      url: ANALYTICS_URL,
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authorization}`,
-      },
-      data: data,
-    };
-
-    const result = await axios(config)
-      .then(function (response) {
-        return {
-          status: true,
-          data: response.data,
-        };
-      })
-      .catch(function (error) {
-        return {
-          status: false,
-          data: error,
-        };
-      });
-
-    return result;
-  } catch (error) {
-    return {
-      status: false,
-      data: error,
-    };
-  }
-};
-
 // const affordability data...
 const affordabilityCheck = async (
   id,
@@ -441,7 +244,7 @@ const affordabilityCheck = async (
   try {
     const config = {
       method: 'post',
-      url: INSIGHTS_URL,
+      url: API + '/affordability',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
@@ -485,5 +288,166 @@ const affordabilityCheck = async (
       status: false,
       data: error,
     };
+  }
+};
+
+// push analytics data...
+const analyticsHttpRequest = async (data, authorization) => {
+  try {
+    const config = {
+      method: 'post',
+      url: API + '/mobile/analytics',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authorization}`,
+      },
+      data: data,
+    };
+
+    const result = await axios(config)
+      .then(function (response) {
+        return {
+          status: true,
+          data: response.data,
+        };
+      })
+      .catch(function (error) {
+        return {
+          status: false,
+          data: error,
+        };
+      });
+
+    return result;
+  } catch (error) {
+    return {
+      status: false,
+      data: error,
+    };
+  }
+};
+
+export const getStatementTransactions = async (authorization, statementKey) => {
+  if (!statementKey) {
+    throw {status: false, msg: 'Please include a statement key'};
+  } else {
+    try {
+      const response = await fetchRequest({
+        authorization,
+        path: `/statements/${statementKey}/transactions`,
+        method: 'GET',
+      });
+
+      return {status: true, data: response};
+    } catch (error) {
+      throw {status: false, msg: error?.msg || error};
+    }
+  }
+};
+
+export const getExistingStatementAnalytics = async (
+  authorization,
+  statementKey,
+) => {
+  if (!statementKey) {
+    throw {status: false, msg: 'Please include a statement key'};
+  } else {
+    try {
+      const response = await fetchRequest({
+        authorization,
+        path: `/statements/${statementKey}`,
+        method: 'GET',
+      });
+
+      return {status: true, data: response};
+    } catch (error) {
+      throw {status: false, msg: error?.msg || error};
+    }
+  }
+};
+
+export const generateCreditScoreForAStatement = async (
+  authorization,
+  statementKey,
+) => {
+  if (!statementKey) {
+    throw {status: false, msg: 'Please include a statement key'};
+  } else {
+    try {
+      const response = await fetchRequest({
+        authorization,
+        path: `/creditscore/${statementKey}`,
+        method: 'POST',
+      });
+
+      return {status: true, data: response};
+    } catch (error) {
+      throw {status: false, msg: error?.msg || error};
+    }
+  }
+};
+
+export const getAnExistingCreditScore = async (authorization, statementKey) => {
+  if (!statementKey) {
+    throw {status: false, msg: 'Please include a statement key'};
+  } else {
+    try {
+      const response = await fetchRequest({
+        authorization,
+        path: `/creditscore/${statementKey}`,
+        method: 'GET',
+      });
+
+      return {status: true, data: response};
+    } catch (error) {
+      throw {status: false, msg: error?.msg || error};
+    }
+  }
+};
+
+export const getExistingStatementAffordabilityAnalysis = async (
+  authorization,
+  statementKey,
+) => {
+  if (!statementKey) {
+    throw {status: false, msg: 'Please include a statement key'};
+  } else {
+    try {
+      const response = await fetchRequest({
+        authorization,
+        path: `/affordability/${statementKey}`,
+        method: 'GET',
+      });
+
+      return {status: true, data: response};
+    } catch (error) {
+      throw {status: false, msg: error?.msg || error};
+    }
+  }
+};
+
+export const attachCustomerIdentificationInformationToAStatement = async (
+  authorization,
+  statementKey,
+  identificationData,
+) => {
+  if (validateIdentificationData(identificationData)) {
+    if (!statementKey) {
+      throw {status: false, msg: 'Please include a statement key'};
+    } else {
+      try {
+        await fetchRequest({
+          authorization,
+          path: `/statements/identification`,
+          method: 'PATCH',
+          data: {statementKey, identificationData},
+        });
+
+        return {status: true};
+      } catch (error) {
+        throw {status: false, msg: error?.msg || error};
+      }
+    }
   }
 };
