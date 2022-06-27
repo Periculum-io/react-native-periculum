@@ -23,7 +23,7 @@ import {
 import API from './api';
 
 // analytics
-export const analytics = async (publickey, reference, mobile, bvn) => {
+export const analyticsRequest = async (publickey, reference, mobile, bvn) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
       // check authorization...
@@ -117,7 +117,7 @@ export const analytics = async (publickey, reference, mobile, bvn) => {
 
       // make the http request call...
       // run analytics...
-      const analyticsData = await analyticsHttpRequest(data); // run analytics...
+      const analyticsData = await runAnalytics(data); // run analytics...
 
       // all is good...
       if (analyticsData.status === true) {
@@ -154,7 +154,7 @@ export const analytics = async (publickey, reference, mobile, bvn) => {
 
 
 // // push analytics data...
-const analyticsHttpRequest = async (data) => {
+const runAnalytics = async (data) => {
   try {
     const config = {
       method: 'post',
@@ -191,7 +191,7 @@ const analyticsHttpRequest = async (data) => {
 
 
 // V2 call
-export const analyticsV2 = async (publickey, reference, mobile, bvn) => {
+export const analyticsRequestV2 = async (publickey, reference, mobile, bvn) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
       // check authorization...
@@ -285,7 +285,7 @@ export const analyticsV2 = async (publickey, reference, mobile, bvn) => {
 
       // make the http request call...
       // run analytics...
-      const analyticsData = await analyticsHttpRequestV2(data); // run analytics...
+      const analyticsData = await runAnalyticsV2(data); // run analytics...
 
       // all is good...
       if (analyticsData.status === true) {
@@ -321,8 +321,8 @@ export const analyticsV2 = async (publickey, reference, mobile, bvn) => {
 };
 
 
-// Post Analytics V2
-const analyticsHttpRequestV2 = async (data) => {
+// Run Analytics V2
+const runAnalyticsV2 = async (data) => {
   try {
     const config = {
       method: 'post',
@@ -349,6 +349,111 @@ const analyticsHttpRequestV2 = async (data) => {
       });
 
     return result;
+  } catch (error) {
+    return {
+      status: false,
+      data: error,
+    };
+  }
+};
+
+// Generate Credit Score
+export const generateCreditScore = async (
+  publicKey,
+  statementKey,
+) => {
+  if (!statementKey) {
+    throw {status: false, msg: 'Please include a statement key'};
+  } else {
+    try {
+      const response = await fetchRequest({
+        publicKey,
+        path: `/creditscore/${statementKey}`,
+        method: 'POST',
+      });
+
+      return {status: true, data: response};
+    } catch (error) {
+      throw {status: false, msg: error?.msg || error};
+    }
+  }
+};
+
+
+// Information Identification
+export const informationPatch = async (
+  publicKey,
+  statementKey,
+  identificationData,
+) => {
+  if (validateIdentificationData(identificationData)) {
+    if (!statementKey) {
+      throw {status: false, msg: 'Please include a statement key'};
+    } else {
+      try {
+        await fetchRequest({
+          path: `/statements/identification`,
+          method: 'PATCH',
+          data: {publicKey, statementKey, identificationData},
+        });
+
+        return {status: true};
+      } catch (error) {
+        throw {status: false, msg: error?.msg || error};
+      }
+    }
+  }
+};
+
+const affordabilityCheckV1 = async (
+  id,
+  dti,
+  loanTenure,
+  publicKey,
+  averageMonthlyTotalExpenses,
+  averageMonthlyLoanRepaymentAmount,
+) => {
+  try {
+    const config = {
+      method: 'post',
+      url: API + '/affordability',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      data: {
+        publickey: publicKey,
+        dti: dti,
+        statementKey: id,
+        loanTenure: loanTenure,
+        averageMonthlyTotalExpenses: averageMonthlyTotalExpenses ?? null,
+        averageMonthlyLoanRepaymentAmount:
+          averageMonthlyLoanRepaymentAmount ?? null,
+      },
+    };
+
+    const response = await axios(config)
+      .then(function (response) {
+        if (response.status === 200) {
+          return {
+            status: true,
+            data: response.data,
+          };
+        }
+        // other kind of response...
+        return {
+          status: true,
+          data: response.data,
+        };
+      })
+      .catch(function (error) {
+        return {
+          status: false,
+          data: error,
+        };
+      });
+
+    return response;
   } catch (error) {
     return {
       status: false,
