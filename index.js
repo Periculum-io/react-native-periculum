@@ -357,31 +357,11 @@ const runAnalyticsV2 = async (data) => {
   }
 };
 
-// Generate Credit Score
-export const generateCreditScore = async (
-  publicKey,
-  statementKey,
-) => {
-  if (!statementKey) {
-    throw {status: false, msg: 'Please include a statement key'};
-  } else {
-    try {
-      const response = await fetchRequest({
-        publicKey,
-        path: `/creditscore/${statementKey}`,
-        method: 'POST',
-      });
 
-      return {status: true, data: response};
-    } catch (error) {
-      throw {status: false, msg: error?.msg || error};
-    }
-  }
-};
 
 
 // Information Identification
-export const informationPatch = async (
+export const patchV1 = async (
   publicKey,
   statementKey,
   identificationData,
@@ -405,60 +385,30 @@ export const informationPatch = async (
   }
 };
 
-const affordabilityCheckV1 = async (
-  id,
-  dti,
-  loanTenure,
+
+export const patchV2 = async (
   publicKey,
-  averageMonthlyTotalExpenses,
-  averageMonthlyLoanRepaymentAmount,
+  statementKey,
+  identificationData,
 ) => {
-  try {
-    const config = {
-      method: 'post',
-      url: API + '/affordability',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: {
-        publickey: publicKey,
-        dti: dti,
-        statementKey: id,
-        loanTenure: loanTenure,
-        averageMonthlyTotalExpenses: averageMonthlyTotalExpenses ?? null,
-        averageMonthlyLoanRepaymentAmount:
-          averageMonthlyLoanRepaymentAmount ?? null,
-      },
-    };
+  if (validateIdentificationData(identificationData)) {
+    if (!statementKey) {
+      throw {status: false, msg: 'Please include a statement key'};
+    } else {
+      try {
+        await fetchRequest({
+          path: `mobile/insights/v2/`,
+          method: 'PATCH',
+          data: {publicKey, statementKey, identificationData},
+        });
 
-    const response = await axios(config)
-      .then(function (response) {
-        if (response.status === 200) {
-          return {
-            status: true,
-            data: response.data,
-          };
-        }
-        // other kind of response...
-        return {
-          status: true,
-          data: response.data,
-        };
-      })
-      .catch(function (error) {
-        return {
-          status: false,
-          data: error,
-        };
-      });
-
-    return response;
-  } catch (error) {
-    return {
-      status: false,
-      data: error,
-    };
+        return {status: true};
+      } catch (error) {
+        throw {status: false, msg: error?.msg || error};
+      }
+    }
   }
 };
+
+
 
