@@ -23,7 +23,7 @@ import {
 import API from './api';
 
 // analytics
-export const analyticsRequest = async (publickey, reference, mobile, bvn) => {
+export const analyticsRequestV1 = async (publickey, reference, mobile, bvn) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
       // check authorization...
@@ -117,7 +117,7 @@ export const analyticsRequest = async (publickey, reference, mobile, bvn) => {
 
       // make the http request call...
       // run analytics...
-      const analyticsData = await runAnalytics(data); // run analytics...
+      const analyticsData = await runAnalytics(data, '/mobile/analytics'); // run analytics...
 
       // all is good...
       if (analyticsData.status === true) {
@@ -154,11 +154,11 @@ export const analyticsRequest = async (publickey, reference, mobile, bvn) => {
 
 
 // // push analytics data...
-const runAnalytics = async (data) => {
+const runAnalytics = async (data, path) => {
   try {
     const config = {
       method: 'post',
-      url: API + '/mobile/analytics',
+      url: API + `${path}`,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn) => {
 
       // make the http request call...
       // run analytics...
-      const analyticsData = await runAnalyticsV2(data); // run analytics...
+      const analyticsData = await runAnalytics(data, '/mobile/insights/v2'); // run analytics...
 
       // all is good...
       if (analyticsData.status === true) {
@@ -318,43 +318,6 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn) => {
   });
 
   return analyticsInfo;
-};
-
-
-// Run Analytics V2
-const runAnalyticsV2 = async (data) => {
-  try {
-    const config = {
-      method: 'post',
-      url: API + '/mobile/insights/v2',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: data,
-    };
-
-    const result = await axios(config)
-      .then(function (response) {
-        return {
-          status: true,
-          data: response.data,
-        };
-      })
-      .catch(function (error) {
-        return {
-          status: false,
-          data: error,
-        };
-      });
-
-    return result;
-  } catch (error) {
-    return {
-      status: false,
-      data: error,
-    };
-  }
 };
 
 
