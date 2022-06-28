@@ -358,37 +358,10 @@ const runAnalyticsV2 = async (data) => {
 };
 
 
-
-
-// Information Identification
-export const patchV1 = async (
-  publicKey,
-  statementKey,
-  identificationData,
-) => {
-  if (validateIdentificationData(identificationData)) {
-    if (!statementKey) {
-      throw {status: false, msg: 'Please include a statement key'};
-    } else {
-      try {
-        await fetchRequest({
-          path: `/statements/identification`,
-          method: 'PATCH',
-          data: {publicKey, statementKey, identificationData},
-        });
-
-        return {status: true};
-      } catch (error) {
-        throw {status: false, msg: error?.msg || error};
-      }
-    }
-  }
-};
-
-
+// V2 Patch Call
 export const patchV2 = async (
   publicKey,
-  statementKey,
+  overviewKey,
   identificationData,
 ) => {
   if (validateIdentificationData(identificationData)) {
@@ -397,9 +370,9 @@ export const patchV2 = async (
     } else {
       try {
         await fetchRequest({
-          path: `mobile/insights/v2/`,
+          path: `mobile/insights/v2/${overviewKey}`,
           method: 'PATCH',
-          data: {publicKey, statementKey, identificationData},
+          data: {publicKey, identificationData},
         });
 
         return {status: true};
