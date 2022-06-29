@@ -1,24 +1,24 @@
 {
   "name": "react-native-periculum",
-  "version": "1.1.0",
-  "description": "Credit score ",
+  "version": "2.0.0",
+  "description": "Mobile Insights V1 & V2 Reworked",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Francis-nova/react-native-periculum.git"
+    "url": "git+https://github.com/Periculum-io/react-native-periculum.git"
   },
   "keywords": [
     "periculum"
   ],
-  "author": "NucleusIS",
+  "author": "Periculum",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Francis-nova/react-native-periculum/issues"
+    "url": "https://github.com/Periculum-io/react-native-periculum/issues"
   },
-  "homepage": "https://github.com/Francis-nova/react-native-periculum-example",
+  "homepage": "https://github.com/Periculum-io/react-native-periculum-example",
   "peerDependencies": {
     "axios": "*",
     "react": "^17.0.2",
