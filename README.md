@@ -50,30 +50,6 @@ Please make sure you add the following android permissions in your AndroidManife
 
 &nbsp;
 
-## Authentication
-
-Your app must first identify and authorize itself against an authorization server by getting an access token before using any of Insights endpoints. For security concerns, make sure that the entire process of obtaining a token takes place on a remote server. So, once you've gotten the token from your server, you can utilize it to get analytics or affordability information by giving it into the token parameter.
-
-To authenticate against the authorization server, make sure you have Periculum's client id and client secret. Your app will not be able to receive an access token and call endpoints on the Insights API without these. If you have not received your client id or client secret, please contact Periculum's usual support channel (email support@periculum.io).
-
-Visit https://www.periculum.io/documentation/insights/#authenticationrequest for further information. 
-
-![Authorization process](https://github.com/AshaluwalaKazeem/Periculum/blob/master/auth.png)
-
-1. Customer phone app authenticates with customer backend server.
-2. Customer backend server should return a valid access token. 
-...2a. If the customer backend server has not obtained an access token, then it should make a call with the customer's client credentials to the authorization server and obtain an access token. 
-...2ai. The customer backend server should cache the access token. 
-...2b. If the customer backend server has an existing cached access token that has not expired, then it should return the cached token. 
-...2bi. If the customer access token is near expiry (5-15 minutes before expiry), then it should obtain a new access token with its client credentials.
-3. The access token is either retrieved from the authorization server or the cache.
-4. The customer backend server returns the access token to the customer's mobile app.
-5. The customer's mobile app can now make an SDK call to submit mobile phone data using the access token.
-6. The SDK method will call the Insights API with the access token.
-   7 & 8. Insights API will validate the token.
-9. Insights API will return the response to the SDK method.
-10. The SDK method will return the response back to the customer mobile app.
-
 
 ## Usage periculum analytics
 
@@ -81,9 +57,9 @@ How to use the Periculum analytics method
 
 ```javascript
 import React from 'react';
-import {analytics} from 'react-native-periculum';
+import {analyticsRequestV1} from 'react-native-periculum';
 
-await analytics(authorization, statementName, customerMobile, customerBvn)
+await analyticsRequestV1(publicKey, statementName, customerMobile, customerBvn)
   .then(result => {
     console.log({result});
   })
@@ -96,176 +72,11 @@ await analytics(authorization, statementName, customerMobile, customerBvn)
 
 | Name           | Description                                             | Type   | Required |
 | -------------- | ------------------------------------------------------- | ------ | -------- |
-| authorization  | Required. API access token generated from periculum api | String | Yes      |
+| publickey     | Required. Public Key attached to account | String | Yes      |
+|
 | statementName  | unique statement reference                              | String | No       |
 | customerMobile | Required. customer phone number                         | String | No       |
 | customerBvn    | customer bvn                                            | String | No       |
-
-&nbsp;
-&nbsp;
-
-## Usage periculum affordability
-
-How to use the Periculum analytics method
-
-```javascript
-import React from 'react';
-import {analytics} from 'react-native-periculum';
-
-affordability(authorization, statementKey, dti, loanTenure)
-  .then(result => {
-    console.log({result});
-  })
-  .catch(error => {
-    console.log({error});
-  });
-```
-
-## Periculum affordability parameters
-
-| Name                              | Description                                          | Type                 | Required |
-| --------------------------------- | ---------------------------------------------------- | -------------------- | -------- |
-| authorization                     | API access token generated from periculum api        | String               | Yes      |
-| statementKey                      | Unique statement reference                           | int                  | Yes      |
-| dti                               | Debt to income ratio for the affordability analysis. | double (between 0-1) | Yes      |
-| loanTenure                        | The period of the loan in months.                    | int                  | Yes      |
-| averageMonthlyTotalExpenses       | Average Monthly Total Expenses                       | double               | No       |
-| averageMonthlyLoanRepaymentAmount | Average Monthly Loan Repayment Amount                | double               | No       |
-
-&nbsp;
-&nbsp;
-
-## Usage periculum get statement transactions
-
-How to use the Periculum get statement transactions method
-
-```javascript
-import React from 'react';
-import {getStatementTransactions} from 'react-native-periculum';
-
-getStatementTransactions(authorization, statementKey)
-  .then(result => {
-    console.log(result);
-  })
-  .catch(error => {
-    console.log(error);
-  });
-```
-
-## Periculum get statement transactions parameters
-
-| Name          | Description                                   | Type   | Required |
-| ------------- | --------------------------------------------- | ------ | -------- |
-| authorization | API access token generated from periculum api | String | Yes      |
-| statementKey  | Unique statement reference                    | int    | Yes      |
-
-&nbsp;
-&nbsp;
-
-## Usage periculum get existing statement analytics
-
-How to use the Periculum get existing statement analytics method
-
-```javascript
-import React from 'react';
-import {getExistingStatementAnalytics} from 'react-native-periculum';
-
-getExistingStatementAnalytics(authorization, statementKey)
-  .then(result => {
-    console.log(result);
-  })
-  .catch(error => {
-    console.log(error);
-  });
-```
-
-## Periculum get existing statement analytics parameters
-
-| Name          | Description                                   | Type   | Required |
-| ------------- | --------------------------------------------- | ------ | -------- |
-| authorization | API access token generated from periculum api | String | Yes      |
-| statementKey  | Unique statement reference                    | int    | Yes      |
-
-&nbsp;
-&nbsp;
-
-## Usage periculum generate credit score for a Statement
-
-How to use the Periculum generate credit score method
-
-```javascript
-import React from 'react';
-import {generateCreditScoreForAStatement} from 'react-native-periculum';
-
-generateCreditScoreForAStatement(authorization, statementKey)
-  .then(result => {
-    console.log(result);
-  })
-  .catch(error => {
-    console.log(error);
-  });
-```
-
-## Periculum generate credit score for a statement parameters
-
-| Name          | Description                                   | Type   | Required |
-| ------------- | --------------------------------------------- | ------ | -------- |
-| authorization | API access token generated from periculum api | String | Yes      |
-| statementKey  | Unique statement reference                    | int    | Yes      |
-
-&nbsp;
-&nbsp;
-
-## Usage periculum get an existing credit score
-
-How to use the Periculum get an existing credit score method
-
-```javascript
-import React from 'react';
-import {getAnExistingCreditScore} from 'react-native-periculum';
-
-getAnExistingCreditScore(authorization, statementKey)
-  .then(result => {
-    console.log(result);
-  })
-  .catch(error => {
-    console.log(error);
-  });
-```
-
-## Periculum get an existing credit score parameters
-
-| Name          | Description                                   | Type   | Required |
-| ------------- | --------------------------------------------- | ------ | -------- |
-| authorization | API access token generated from periculum api | String | Yes      |
-| statementKey  | Unique statement reference                    | int    | Yes      |
-
-&nbsp;
-&nbsp;
-
-## Usage periculum get existing statement affordability analysis
-
-How to use the Periculum get existing statement affordability analysis method
-
-```javascript
-import React from 'react';
-import {getExistingStatementAffordabilityAnalysis} from 'react-native-periculum';
-
-getExistingStatementAffordabilityAnalysis(authorization, statementKey)
-  .then(result => {
-    console.log(result);
-  })
-  .catch(error => {
-    console.log(error);
-  });
-```
-
-## Periculum get existing statement affordability analysis parameters
-
-| Name          | Description                                   | Type   | Required |
-| ------------- | --------------------------------------------- | ------ | -------- |
-| authorization | API access token generated from periculum api | String | Yes      |
-| statementKey  | Unique statement reference                    | int    | Yes      |
 
 &nbsp;
 &nbsp;
@@ -276,10 +87,10 @@ How to use the Periculum attach customer identification information to a stateme
 
 ```javascript
 import React from 'react';
-import {attachCustomerIdentificationInformationToAStatement} from 'react-native-periculum';
+import {patchV2} from 'react-native-periculum';
 
-attachCustomerIdentificationInformationToAStatement(
-  authorization,
+patchV2(
+  publicKey,
   statementKey,
   identificationData,
 )
@@ -295,7 +106,7 @@ attachCustomerIdentificationInformationToAStatement(
 
 | Name               | Description                                           | Type   | Required |
 | ------------------ | ----------------------------------------------------- | ------ | -------- |
-| authorization      | API access token generated from periculum api         | String | Yes      |
+| publicKey      | Public Key attached to the client account         | String | Yes      |
 | statementKey       | Unique statement reference                            | int    | Yes      |
 | identificationData | Array of object with keys of IdentifierName and Value | array  | Yes      |
 
@@ -303,13 +114,11 @@ attachCustomerIdentificationInformationToAStatement(
 
 ## Authentication
 
-To utilize any of Insights endpoints, your app is required to first identify and authorize itself against an authorization server by obtaining an access token.
+To utilize any of Insights endpoints, a public key value is required.
 
-To authenticate against the authorization server, you must ensure that you have received your app’s client_id and client_secret from Periculum. Without these, your app will be unable to obtain an access token and call endpoints on the Insights API. If you have not obtained your client_id or client_secret, then you should contact Periculum standard support channel (email support@periculum.io).
+To authenticate against the authorization server, you must ensure that you have received your app’s client public key from Periculum. Without this, your app will be unable to call endpoints on the Insights API. If you have not obtained your client public key, then you should contact Periculum standard support channel (email support@periculum.io).
 
 https://www.periculum.io/documentation/insights/#authenticationrequest
-
-![alt text](./images/auth.png)
 
 &nbsp;
 
