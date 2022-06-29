@@ -1,6 +1,6 @@
 {
   "name": "react-native-periculum",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Mobile Insights V1 & V2 Reworked",
   "main": "index.js",
   "scripts": {
