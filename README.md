@@ -51,9 +51,12 @@ Please make sure you add the following android permissions in your AndroidManife
 &nbsp;
 
 
-## Usage periculum analytics
+## Periculum Analytics V1
 
-How to use the Periculum analytics method
+How to use the Periculum analytics method.
+If you are using the V1 SDK methods then do the following:
+
+Example:
 
 ```javascript
 import React from 'react';
@@ -68,22 +71,65 @@ await analyticsRequestV1(publicKey, statementName, customerMobile, customerBvn)
   });
 ```
 
-## Periculum analytics parameters
+## Periculum Analytics V1 Parameters
 
 | Name           | Description                                             | Type   | Required |
-| -------------- | ------------------------------------------------------- | ------ | -------- |
+| -------------- | ------------------------------------------------------- | ------ | --------
 | publickey     | Required. Public Key attached to account | String | Yes      |
 |
 | statementName  | unique statement reference                              | String | No       |
 | customerMobile | Required. customer phone number                         | String | No       |
 | customerBvn    | customer bvn                                            | String | No       |
 
+
+## Response 
+The response will contain a set of insight keys. You can send these to your backend server. The backend server can use it's client credentials to obtain all the insight details for each key from the Insight API.
 &nbsp;
 &nbsp;
 
-## Usage periculum attach customer identification information to a statement
+## Periculum Analytics V2
 
-How to use the Periculum attach customer identification information to a statement method
+How to use the Periculum Analytics V2 method.
+If you are using the V2 SDK methods then do the following:
+
+Example:
+
+```javascript
+import React from 'react';
+import {analyticsRequestV2} from 'react-native-periculum';
+
+await analyticsRequestV2(publicKey, statementName, customerMobile, customerBvn)
+  .then(result => {
+    console.log({result});
+  })
+  .catch(error => {
+    console.log({error});
+  });
+```
+
+## Periculum Analytics V2 Parameters
+
+| Name           | Description                                             | Type   | Required |
+| -------------- | ------------------------------------------------------- | ------ | --------
+| publickey     | Required. Public Key attached to account | String | Yes      |
+|
+| statementName  | unique statement reference                              | String | No       |
+| customerMobile | Required. customer phone number                         | String | No       |
+| customerBvn    | customer bvn                                            | String | No       |
+
+
+## Response 
+Insights will return an overview key.
+You can send this overview key back to your backend server. Your backend server will use it's client credentials to make a to the insights mobile v2 endpoints for details related to the overview key.
+
+&nbsp;
+&nbsp;
+
+## Updating an existing mobile V2 Analytics
+
+If you have a previously generated mobile v2 overview key, you can update it with a new SDK data. to do this make the following call:
+
+Example:
 
 ```javascript
 import React from 'react';
@@ -102,7 +148,7 @@ patchV2(
   });
 ```
 
-## Periculum attach customer identification information to a statement parameters
+## Updating an existing mobile V2 Analytics parameters
 
 | Name               | Description                                           | Type   | Required |
 | ------------------ | ----------------------------------------------------- | ------ | -------- |
@@ -110,15 +156,18 @@ patchV2(
 | statementKey       | Unique statement reference                            | int    | Yes      |
 | identificationData | Array of object with keys of IdentifierName and Value | array  | Yes      |
 
+
+## Response 
+Insights will update the previous overview key data with the latest data.
+You can use the overview key in your backend server with it's client credentials to make a call to the insights mobile v2 endpoints for details related to the overview key.
+
+&nbsp;
 &nbsp;
 
-## Authentication
+## Setup
 
-To utilize any of Insights endpoints, a public key value is required.
+In order to utilize any of the SDK methods, you must have a public key. If you have not obtained your client public key, then you should contact Periculum standard support channel (email support@periculum.io).
 
-To authenticate against the authorization server, you must ensure that you have received your app’s client public key from Periculum. Without this, your app will be unable to call endpoints on the Insights API. If you have not obtained your client public key, then you should contact Periculum standard support channel (email support@periculum.io).
-
-https://www.periculum.io/documentation/insights/#authenticationrequest
 
 &nbsp;
 
