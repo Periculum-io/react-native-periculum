@@ -73,13 +73,12 @@ await analyticsRequestV1(publicKey, statementName, customerMobile, customerBvn)
 
 ## Periculum Analytics V1 Parameters
 
-| Name           | Description                                             | Type   | Required |
-| -------------- | ------------------------------------------------------- | ------ | --------
-| publickey     | Required. Public Key attached to account | String | Yes      |
-|
-| statementName  | unique statement reference                              | String | No       |
-| customerMobile | Required. customer phone number                         | String | No       |
-| customerBvn    | customer bvn                                            | String | No       |
+| Name           | Description                                             | Type   | Required|
+| -------------- | ------------------------------------------------------- | ------ | --------|
+| publickey      | Required. Public Key attached to account                | String | Yes     |
+| statementName  | unique statement reference                              | String | No      |
+| customerMobile | Required. customer phone number                         | String | No      |
+| customerBvn    | customer bvn                                            | String | No      |
 
 
 ## Response 
@@ -110,12 +109,11 @@ await analyticsRequestV2(publicKey, statementName, customerMobile, customerBvn)
 ## Periculum Analytics V2 Parameters
 
 | Name           | Description                                             | Type   | Required |
-| -------------- | ------------------------------------------------------- | ------ | --------
-| publickey     | Required. Public Key attached to account | String | Yes      |
-|
-| statementName  | unique statement reference                              | String | No       |
-| customerMobile | Required. customer phone number                         | String | No       |
-| customerBvn    | customer bvn                                            | String | No       |
+| -------------- | ------------------------------------------------------- | ------ | --------|
+| publickey      | Required. Public Key attached to account                | String | Yes     |
+| statementName  | unique statement reference                              | String | No      |
+| customerMobile | Required. customer phone number                         | String | No      |
+| customerBvn    | customer bvn                                            | String | No      |
 
 
 ## Response 
@@ -152,7 +150,7 @@ patchV2(
 
 | Name               | Description                                           | Type   | Required |
 | ------------------ | ----------------------------------------------------- | ------ | -------- |
-| publicKey      | Public Key attached to the client account         | String | Yes      |
+| publicKey          | Public Key attached to the client account             | String | Yes      |
 | statementKey       | Unique statement reference                            | int    | Yes      |
 | identificationData | Array of object with keys of IdentifierName and Value | array  | Yes      |
 
