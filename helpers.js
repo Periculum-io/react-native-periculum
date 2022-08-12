@@ -1,7 +1,7 @@
 import DeviceInfo from 'react-native-device-info';
 import GetLocation from 'react-native-get-location';
 import SmsAndroid from 'react-native-get-sms-android';
-import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
+import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
 
 export const device = async () => {
   DeviceInfo.getDevice().then(device => {
@@ -33,7 +33,7 @@ export const validateIdentificationData = identificationData => {
       }
     }
   } else {
-    throw {status: false, msg: 'identificationData must be an array'};
+    throw { status: false, msg: 'identificationData must be an array' };
   }
 };
 
@@ -83,7 +83,7 @@ export const getLocation = async () => {
 };
 
 // sms data...
-export const getSmsData = async () => {
+export const getSmsData = async (customSenderOnly) => {
   const date = new Date(); // get date...
 
   // max date...
@@ -112,6 +112,11 @@ export const getSmsData = async () => {
         return reject(data);
       },
       (count, smsList) => {
+        if (customSenderOnly) {
+          const phoneNumberRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/g
+          smsList = smsList.map(sms => !phoneNumberRegex.test(sms.address) ? true : false)
+          count = smsList.length
+        }
         return resolve({
           smsList: smsList,
           count: count,
@@ -176,7 +181,7 @@ export const isCameraPresent = async () => {
     .then(isCameraPresent => {
       return isCameraPresent;
     })
-    .catch(cameraAccessException => {});
+    .catch(cameraAccessException => { });
 };
 
 // Network
