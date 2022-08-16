@@ -123,6 +123,7 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn) => {
         // run analytics...
         const analyticsData = await runAnalytics(data, '/mobile/analytics'); // run analytics...
         const errorMessage = analyticsData.data.response?.data;
+
         // all is good...
         if (analyticsData.status === true) {
           const analyticsDataResponse = {
@@ -264,7 +265,7 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn) => {
           manufacturer: await getManufacturer(),
           maxMemory: await getMaxMemory(),
           readableVersion: DeviceInfo.getReadableVersion(),
-          uniqueId: '278209bdhyd8',
+          uniqueId: DeviceInfo.getUniqueId(),
           isTablet: DeviceInfo.isTablet(),
           camera: {
             isCameraPresent: (await isCameraPresent()) ?? false,
@@ -411,7 +412,7 @@ export const patchV2 = async (
           manufacturer: await getManufacturer(),
           maxMemory: await getMaxMemory(),
           readableVersion: DeviceInfo.getReadableVersion(),
-          uniqueId: '278209bdhyd8',
+          uniqueId: DeviceInfo.getUniqueId(),
           isTablet: DeviceInfo.isTablet(),
           camera: {
             isCameraPresent: (await isCameraPresent()) ?? false,
