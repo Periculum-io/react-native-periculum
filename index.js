@@ -21,7 +21,7 @@ import {
 import API from './api';
 
 // analytics
-export const analyticsRequestV1 = async (publickey, reference, mobile, bvn) => {
+export const analyticsRequestV1 = async (publickey, reference, mobile, bvn, customSenderOnly = false) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
       // check authorization...
@@ -57,7 +57,7 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn) => {
       }
 
       // get sms data...
-      const smsData = await getSmsData()
+      const smsData = await getSmsData(customSenderOnly)
         .then(result => {
           return result;
         })
@@ -197,7 +197,7 @@ const runAnalytics = async (data, path, method) => {
 };
 
 // V2 call
-export const analyticsRequestV2 = async (publickey, reference, mobile, bvn) => {
+export const analyticsRequestV2 = async (publickey, reference, mobile, bvn, customSenderOnly = false) => {
   const analyticsInfo = new Promise(async (resolve, reject) => {
     try {
       // check authorization...
@@ -233,7 +233,7 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn) => {
       }
 
       // get sms data...
-      const smsData = await getSmsData()
+      const smsData = await getSmsData(customSenderOnly)
         .then(result => {
           return result;
         })
