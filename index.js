@@ -1,6 +1,5 @@
 import DeviceInfo from 'react-native-device-info';
 import axios from 'axios';
-import {fetchRequest} from './fetchRequest';
 import {
   checkPermissions,
   device,
@@ -18,7 +17,6 @@ import {
   getSmsData,
   isCameraPresent,
   uniqueReference,
-  validateIdentificationData,
 } from './helpers';
 import API from './api';
 
@@ -50,7 +48,7 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn, cust
       // get customer location...
       const location = await getLocation();
 
-      if (location.status === false) {
+      if (location?.status === false) {
         const data = {
           status: false,
           msg: 'An error occurred when trying to get clients location!',
@@ -67,8 +65,8 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn, cust
           return error;
         });
 
-      const sms = smsData.smsList; // store sms list
-      const smsCount = smsData.count; //
+      const sms = smsData?.smsList; // store sms list
+      const smsCount = smsData?.count; //
 
       // align the data......
       const data = {
@@ -86,7 +84,7 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn, cust
           apiLevel: await getApiLevel(),
           androidId: await getAndroidId(),
           brand: DeviceInfo.getBrand(),
-          buildNumber: DeviceInfo.getBuildNumber(),
+          buildNumber: DeviceInfo?.getBuildNumber()?.trim(),
           fingerprint: await getFingerprint(),
           manufacturer: await getManufacturer(),
           maxMemory: await getMaxMemory(),
@@ -115,30 +113,40 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn, cust
         location: location.data,
       };
 
-      // make the http request call...
-      // run analytics...
-      const analyticsData = await runAnalytics(data, '/mobile/analytics'); // run analytics...
+      if (!smsCount) {
+        reject({
+          status: false,
+          msg: 'There were no SMS messages to analyze',
+        });
+      } else {
+        // make the http request call...
+        // run analytics...
+        const analyticsData = await runAnalytics(data, '/mobile/analytics'); // run analytics...
+        const errorMessage = analyticsData.data.response?.data;
 
-      // all is good...
-      if (analyticsData.status === true) {
-        const analyticsDataResponse = {
-          status: analyticsData.status,
-          data: analyticsData.data, // analytics data...
-        };
+        // all is good...
+        if (analyticsData.status === true) {
+          const analyticsDataResponse = {
+            status: analyticsData?.status,
+            data: analyticsData?.data, // analytics data...
+          };
 
-        // call resolve
-        resolve(analyticsDataResponse);
-      }
+          // call resolve
+          resolve(analyticsDataResponse);
+        }
 
-      // failed....
-      if (analyticsData.status === false) {
-        const analyticsDataResponseFailed = {
-          status: analyticsData.status,
-          data: 'Failed to get customer analytics data, contact support if this persist!',
-        };
+        // failed....
+        if (analyticsData?.status === false) {
+          const analyticsDataResponseFailed = {
+            status: analyticsData?.status,
+            msg:
+              errorMessage ||
+              'Failed to get customer analytics data, contact support if this persist!',
+          };
 
-        // call resolve
-        reject(analyticsDataResponseFailed);
+          // call resolve
+          reject(analyticsDataResponseFailed);
+        }
       }
     } catch (error) {
       const data = {
@@ -152,12 +160,11 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn, cust
   return analyticsInfo;
 };
 
-
 // // push analytics data...
-const runAnalytics = async (data, path) => {
+const runAnalytics = async (data, path, method) => {
   try {
     const config = {
-      method: 'post',
+      method: method || 'post',
       url: API + `${path}`,
       headers: {
         Accept: 'application/json',
@@ -170,7 +177,7 @@ const runAnalytics = async (data, path) => {
       .then(function (response) {
         return {
           status: true,
-          data: response.data,
+          data: response?.data,
         };
       })
       .catch(function (error) {
@@ -188,7 +195,6 @@ const runAnalytics = async (data, path) => {
     };
   }
 };
-
 
 // V2 call
 export const analyticsRequestV2 = async (publickey, reference, mobile, bvn, customSenderOnly = false) => {
@@ -218,7 +224,7 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn, cust
       // get customer location...
       const location = await getLocation();
 
-      if (location.status === false) {
+      if (location?.status === false) {
         const data = {
           status: false,
           msg: 'An error occurred when trying to get clients location!',
@@ -235,27 +241,27 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn, cust
           return error;
         });
 
-      const sms = smsData.smsList; // store sms list
-      const smsCount = smsData.count; //
+      const sms = smsData?.smsList; // store sms list
+      const smsCount = smsData?.count; //
 
       // align the data......
       const data = {
-        publickey: publickey,
-        statementName: reference ?? (await uniqueReference()),
+        publicKey: publickey,
+        statementName: reference?.toString?.() ?? (await uniqueReference()),
         appName: DeviceInfo.getApplicationName(),
         bundleId: DeviceInfo.getBundleId(),
         version: DeviceInfo.getVersion(),
         device: {
-          device: await device(),
-          deviceId: DeviceInfo.getDeviceId(),
-          deviceName: await getDeviceName(),
+          device: (await device()) ?? null,
+          deviceId: DeviceInfo.getDeviceId() ?? null,
+          deviceName: (await getDeviceName()) ?? null,
           firstInstallTime: await getFirstInstallTime(),
           baseOs: 'Android',
-          apiLevel: await getApiLevel(),
-          androidId: await getAndroidId(),
+          apiLevel: (await getApiLevel()) ?? null,
+          androidId: (await getAndroidId()) ?? null,
           brand: DeviceInfo.getBrand(),
-          buildNumber: DeviceInfo.getBuildNumber(),
-          fingerprint: await getFingerprint(),
+          buildNumber: DeviceInfo?.getBuildNumber()?.trim(),
+          fingerprint: (await getFingerprint()) ?? null,
           manufacturer: await getManufacturer(),
           maxMemory: await getMaxMemory(),
           readableVersion: DeviceInfo.getReadableVersion(),
@@ -280,33 +286,44 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn, cust
             bvn: bvn ?? null,
           },
         },
-        location: location.data,
+        location: location?.data,
       };
 
       // make the http request call...
       // run analytics...
-      const analyticsData = await runAnalytics(data, '/mobile/insights/v2'); // run analytics...
 
-      // all is good...
-      if (analyticsData.status === true) {
-        const analyticsDataResponse = {
-          status: analyticsData.status,
-          data: analyticsData.data, // analytics data...
-        };
+      if (!smsCount) {
+        reject({
+          status: false,
+          msg: 'There were no SMS messages to analyze',
+        });
+      } else {
+        const analyticsData = await runAnalytics(data, '/mobile/insights/v2'); // run analytics...
+        const errorMessage = analyticsData.data.response?.data;
 
-        // call resolve
-        resolve(analyticsDataResponse);
-      }
+        // all is good...
+        if (analyticsData?.status === true) {
+          const analyticsDataResponse = {
+            status: analyticsData?.status,
+            data: analyticsData?.data, // analytics data...
+          };
 
-      // failed....
-      if (analyticsData.status === false) {
-        const analyticsDataResponseFailed = {
-          status: analyticsData.status,
-          data: 'Failed to get customer analytics data, contact support if this persist!',
-        };
+          // call resolve
+          resolve(analyticsDataResponse);
+        }
 
-        // call resolve
-        reject(analyticsDataResponseFailed);
+        // failed....
+        if (analyticsData?.status === false) {
+          const analyticsDataResponseFailed = {
+            status: analyticsData?.status,
+            msg:
+              errorMessage ||
+              'Failed to get customer analytics data, contact support if this persist!',
+          };
+
+          // call resolve
+          reject(analyticsDataResponseFailed);
+        }
       }
     } catch (error) {
       const data = {
@@ -320,31 +337,158 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn, cust
   return analyticsInfo;
 };
 
-
 // V2 Patch Call
 export const patchV2 = async (
   publicKey,
   overviewKey,
-  identificationData,
+  reference,
+  mobile,
+  bvn,
 ) => {
-  if (validateIdentificationData(identificationData)) {
-    if (!statementKey) {
-      throw {status: false, msg: 'Please include a statement key'};
-    } else {
-      try {
-        await fetchRequest({
-          path: `mobile/insights/v2/${overviewKey}`,
-          method: 'PATCH',
-          data: {publicKey, identificationData},
+  const analyticsInfo = new Promise(async (resolve, reject) => {
+    try {
+      // check authorization...
+      if (!publicKey) {
+        const data = {
+          status: false,
+          msg: 'Please enter public key!',
+        };
+        return reject(data);
+      }
+
+      // checkPermissions
+      const permission = await checkPermissions();
+
+      // if permission is false then return error...
+      if (permission === false) {
+        const data = {
+          status: false,
+          msg: 'Please check all permissions are granted!',
+        };
+        return reject(data);
+      }
+
+      // get customer location...
+      const location = await getLocation();
+
+      if (location?.status === false) {
+        const data = {
+          status: false,
+          msg: 'An error occurred when trying to get clients location!',
+        };
+        return reject(data);
+      }
+
+      // get sms data...
+      const smsData = await getSmsData()
+        .then(result => {
+          return result;
+        })
+        .catch(error => {
+          return error;
         });
 
-        return {status: true};
-      } catch (error) {
-        throw {status: false, msg: error?.msg || error};
+      const sms = smsData?.smsList; // store sms list
+      const smsCount = smsData?.count; //
+
+      // align the data......
+      const data = {
+        publicKey: publicKey,
+        statementName: reference?.toString?.() ?? (await uniqueReference()),
+        appName: DeviceInfo.getApplicationName(),
+        bundleId: DeviceInfo.getBundleId(),
+        version: DeviceInfo.getVersion(),
+        device: {
+          device: (await device()) ?? null,
+          deviceId: DeviceInfo.getDeviceId() ?? null,
+          deviceName: (await getDeviceName()) ?? null,
+          firstInstallTime: await getFirstInstallTime(),
+          baseOs: 'Android',
+          apiLevel: (await getApiLevel()) ?? null,
+          androidId: (await getAndroidId()) ?? null,
+          brand: DeviceInfo.getBrand(),
+          buildNumber: DeviceInfo?.getBuildNumber()?.trim(),
+          fingerprint: (await getFingerprint()) ?? null,
+          manufacturer: await getManufacturer(),
+          maxMemory: await getMaxMemory(),
+          readableVersion: DeviceInfo.getReadableVersion(),
+          uniqueId: DeviceInfo.getUniqueId(),
+          isTablet: DeviceInfo.isTablet(),
+          camera: {
+            isCameraPresent: (await isCameraPresent()) ?? false,
+          },
+          network: {
+            carrier: await getCarrier(),
+            ip: await getIpAddress(),
+            macAddress: await getMacAddress(),
+          },
+        },
+        sms: {
+          data: JSON.parse(sms),
+          count: smsCount,
+        },
+        metadata: {
+          customer: {
+            phoneNumber: mobile ?? null,
+            bvn: bvn ?? null,
+          },
+        },
+        location: location?.data,
+      };
+
+      // make the http request call...
+      // run analytics...
+
+      if (!smsCount) {
+        reject({
+          status: false,
+          msg: 'There were no SMS messages to analyze',
+        });
+      } else {
+        if (!overviewKey) {
+          throw {status: false, msg: 'Please include a overview key'};
+        }
+
+        const analyticsData = await runAnalytics(
+          data,
+          `/mobile/insights/v2/${overviewKey}`,
+          'PATCH',
+        );
+
+        const errorMessage = analyticsData?.data?.response?.data;
+
+        // all is good...
+        if (analyticsData?.status === true) {
+          const analyticsDataResponse = {
+            status: analyticsData?.status,
+            data: analyticsData?.data, // analytics data...
+          };
+
+          // call resolve
+          resolve(analyticsDataResponse);
+        }
+
+        // failed....
+        if (analyticsData?.status === false) {
+          const analyticsDataResponseFailed = {
+            status: analyticsData?.status,
+            msg:
+              errorMessage ||
+              'Failed to get customer analytics data, contact support if this persist!',
+          };
+
+          // call resolve
+          reject(analyticsDataResponseFailed);
+        }
       }
+    } catch (error) {
+      const data = {
+        status: false,
+        error: error,
+      };
+      return reject(data);
     }
-  }
+  });
+
+  return analyticsInfo;
 };
-
-
-

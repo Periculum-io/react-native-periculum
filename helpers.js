@@ -4,7 +4,7 @@ import SmsAndroid from 'react-native-get-sms-android';
 import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
 
 export const device = async () => {
-  DeviceInfo.getDevice().then(device => {
+  return DeviceInfo.getDevice().then(device => {
     return device;
   });
 };
