@@ -45,6 +45,15 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn, cust
         return reject(data);
       }
 
+      // if phone number is empty then return error...      
+      if (!mobile || mobile == "") {
+        const ata = {
+          status: false,
+          msg: 'Please enter phone number!',
+        };
+        return reject(ata);
+      }
+
       // get customer location...
       const location = await getLocation();
 
@@ -106,7 +115,7 @@ export const analyticsRequestV1 = async (publickey, reference, mobile, bvn, cust
         },
         metadata: {
           customer: {
-            phoneNumber: mobile ?? null,
+            phoneNumber: mobile,
             bvn: bvn ?? null,
           },
         },
@@ -221,6 +230,15 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn, cust
         return reject(data);
       }
 
+      // if phone number is empty then return error...
+      if (!mobile || mobile == "") {
+        const ata = {
+          status: false,
+          msg: 'Please enter phone number!',
+        };
+        return reject(ata);
+      }
+
       // get customer location...
       const location = await getLocation();
 
@@ -282,7 +300,7 @@ export const analyticsRequestV2 = async (publickey, reference, mobile, bvn, cust
         },
         metadata: {
           customer: {
-            phoneNumber: mobile ?? null,
+            phoneNumber: mobile,
             bvn: bvn ?? null,
           },
         },

@@ -77,7 +77,7 @@ await analyticsRequestV1(publicKey, statementName, customerMobile, customerBvn)
 | -------------- | ------------------------------------------------------- | ------ | --------|
 | publickey      | Required. Public Key attached to account                | String | Yes     |
 | statementName  | unique statement reference                              | String | No      |
-| customerMobile | Required. customer phone number                         | String | No      |
+| customerMobile | Required. customer phone number                         | String | Yes     |
 | customerBvn    | customer bvn                                            | String | No      |
 
 
@@ -112,7 +112,7 @@ await analyticsRequestV2(publicKey, statementName, customerMobile, customerBvn)
 | -------------- | ------------------------------------------------------- | ------ | --------|
 | publickey      | Required. Public Key attached to account                | String | Yes     |
 | statementName  | unique statement reference                              | String | No      |
-| customerMobile | Required. customer phone number                         | String | No      |
+| customerMobile | Required. customer phone number                         | String | Yes     |
 | customerBvn    | customer bvn                                            | String | No      |
 
 
