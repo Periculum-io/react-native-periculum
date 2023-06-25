@@ -1,6 +1,6 @@
 {
   "name": "react-native-periculum",
-  "version": "2.2.1",
+  "version": "2.1.0",
   "description": "Significant bug fixing for V2 endpoints",
   "main": "index.js",
   "scripts": {
