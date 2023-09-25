@@ -1,7 +1,7 @@
 # react-native-periculum
 
 Periculum library is a powerful & easy to use credit score library for Android.
-The library gives you credit score information for your customer. No stress :)
+The library gives you credit score information for your customer. No stress :
 
 ## Badges
 
@@ -163,9 +163,43 @@ You can use the overview key in your backend server with it's client credentials
 &nbsp;
 
 ## Setup
+For this plugin to work, you must have a Periculum [account](https://register.insights-periculum.com) and you'll also need to use your Client Id and secret key to generate a token from the Periculum API see [docs](https://insights-periculum.readme.io/reference/authentication-request) here.
 
-In order to utilize any of the SDK methods, you must have a public key. If you have not obtained your client public key, then you should contact Periculum standard support channel (email support@periculum.io).
 
+## SDK User Flow
+```
+   +-----------------------------------------------------+
+   |                User Flow Diagram                    |
+   +-----------------------------------------------------+
+   |                                                     |
+   v                                                     |
+   [1]    Merchant Application requests permission      |
+   |      from client device                             |
+   |                                                     |
+   |                                                     |
+   v                                                     |
+   [2]    Merchant Application calls backend server to   |
+   |      generate access token from the info obtained   |
+   |      in step 1                                      |
+   |                                                     |
+   |                                                     |
+   v                                                     |
+   [3]    Data is pulled from customer device, and the   |
+   |      Merchant Application calls SDK method to       |
+   |      process it                                     |
+   |                                                     |
+   |                                                     |
+   v                                                     |
+   [4]    SDK calls Insights API to generate mobile     |
+   |      insights from the extracted data              |
+   |                                                     |
+   |                                                     |
+   v                                                     |
+   [End]  End of the user flow                            |
+   |                                                     |
+   +-----------------------------------------------------+
+
+```
 
 &nbsp;
 
