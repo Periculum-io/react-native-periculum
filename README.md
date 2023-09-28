@@ -202,7 +202,7 @@ For this plugin to work, you must have a Periculum [account](https://register.in
 ```
 
 # flow Diagram
-![SDK Flow](<Mobile SDK V1-SDK mini flow.drawio.png>)
+![SDK flow](<Mobile SDK V1-SDK mini flow.drawio.png>)
 
 &nbsp;
 
